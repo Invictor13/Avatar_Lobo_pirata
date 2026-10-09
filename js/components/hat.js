@@ -5,7 +5,7 @@
   const sphere = (w = 10, h = 6) => geometry.sphere(w, h);
 
   window.LoboPirata.parts.hat = (root) => {
-    const hat = root.add(node("pirate-hat", [0, 0.98, -0.02]));
+    const hat = root.add(node("pirate-hat", [0, 0.58, -0.02]));
 
     // Tricorn main brim structure
     const brim = hat.add(node("tricorn-brim", [0, 0, 0]));
