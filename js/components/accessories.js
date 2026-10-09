@@ -2,64 +2,103 @@
   "use strict";
 
   const { node, geometry, colors } = window.LoboPirata;
-  const sphere = geometry.sphere;
+  const sphere = (w = 8, h = 6) => geometry.sphere(w, h);
 
   window.LoboPirata.parts.accessories = (root) => {
     const gear = root.add(node("pirate-accessories"));
 
-    const strap = gear.add(node("leather-eyepatch-strap"));
+    // Eyepatch on left side of fox's face (which is on observer's left when facing front, side = -1)
+    const patchGroup = gear.add(node("eyepatch-group", [-0.38, 0.28, 0.76]));
+    patchGroup.rotation[2] = -0.18;
+
+    // Eyepatch strap running across forehead/face
+    const strap = gear.add(node("eyepatch-strap"));
     strap.mesh(geometry.tube([
-      [-0.86, 0.58, 0.26], [-0.68, 0.48, 0.52], [-0.48, 0.43, 0.7],
-      [-0.27, 0.47, 0.78], [0, 0.49, 0.77], [0.3, 0.48, 0.71],
-      [0.59, 0.43, 0.59], [0.83, 0.35, 0.38],
-    ], 0.052, 6), [0.095, 0.055, 0.042], 0.82);
+      [-0.88, 0.52, 0.22], [-0.65, 0.42, 0.5], [-0.38, 0.28, 0.76],
+      [0.02, 0.12, 0.82], [0.42, -0.05, 0.78], [0.78, -0.25, 0.52],
+    ], 0.048, 6), colors.leather, 0.85);
 
-    const patchRim = gear.add(node("gold-eyepatch-rim", [-0.405, 0.29, 0.72]));
-    patchRim.rotation[2] = -0.13;
-    patchRim.scale = [0.36, 0.28, 0.1];
-    patchRim.mesh(geometry.sphere(9, 6), colors.gold, 0.31);
+    // Eyepatch gold outer rim frame
+    const patchRim = patchGroup.add(node("patch-gold-rim", [0, 0, 0]));
+    patchRim.scale = [0.34, 0.28, 0.08];
+    patchRim.mesh(sphere(8, 6), colors.gold, 0.28);
 
-    const patch = gear.add(node("three-dimensional-eyepatch", [-0.405, 0.29, 0.79]));
-    patch.rotation[2] = -0.13;
-    patch.scale = [0.32, 0.245, 0.13];
-    patch.mesh(sphere(7, 5), [0.11, 0.105, 0.1], 0.56);
+    // Eyepatch dark faceted main shield
+    const patchMain = patchGroup.add(node("patch-faceted-surface", [0, 0, 0.04]));
+    patchMain.scale = [0.3, 0.24, 0.12];
+    patchMain.mesh(sphere(6, 5), colors.eyepatchFacet, 0.6);
 
-    const patchPlate = gear.add(node("eyepatch-raised-panel", [-0.405, 0.29, 0.9]));
-    patchPlate.rotation[2] = -0.13;
-    patchPlate.scale = [0.24, 0.17, 0.035];
-    patchPlate.mesh(sphere(5, 4), [0.23, 0.19, 0.14], 0.62);
+    // Eyepatch inner raised gem/plate facet
+    const patchPlate = patchGroup.add(node("patch-center-gem", [0, 0, 0.1]));
+    patchPlate.scale = [0.2, 0.15, 0.05];
+    patchPlate.mesh(sphere(5, 4), colors.foxDark, 0.7);
 
-    for (const side of [-1, 1]) {
-      const rivet = gear.add(node("eyepatch-gold-rivet", [-0.405 + side * 0.22, 0.29, 0.93]));
-      rivet.scale = [0.032, 0.032, 0.025];
-      rivet.mesh(sphere(7, 5), colors.gold, 0.28);
+    // Red bandana scarf around neck with knot and trailing ends on right side
+    const bandanaGroup = gear.add(node("red-bandana-scarf", [0, -0.88, 0.45]));
+
+    // Bandana collar wrap around lower neck/jaw
+    const bandanaWrap = bandanaGroup.add(node("bandana-collar", [0, 0, 0]));
+    bandanaWrap.scale = [0.78, 0.25, 0.55];
+    bandanaWrap.mesh(sphere(10, 6), colors.redBandana, 0.8);
+
+    // Bandana front fold facets
+    const bandanaFoldLeft = bandanaGroup.add(node("bandana-fold-left", [-0.25, -0.08, 0.28]));
+    bandanaFoldLeft.rotation[2] = 0.35;
+    bandanaFoldLeft.scale = [0.32, 0.22, 0.18];
+    bandanaFoldLeft.mesh(geometry.cone(5, 0.02, 0.7), colors.redBandana, 0.82);
+
+    const bandanaFoldRight = bandanaGroup.add(node("bandana-fold-right", [0.25, -0.08, 0.28]));
+    bandanaFoldRight.rotation[2] = -0.35;
+    bandanaFoldRight.scale = [0.32, 0.22, 0.18];
+    bandanaFoldRight.mesh(geometry.cone(5, 0.02, 0.7), colors.redBandana, 0.82);
+
+    const bandanaCenterTriangle = bandanaGroup.add(node("bandana-center-tip", [0, -0.22, 0.32]));
+    bandanaCenterTriangle.scale = [0.38, 0.35, 0.12];
+    bandanaCenterTriangle.mesh(geometry.cone(5, 0.01, 0.8), colors.darkRed, 0.85);
+
+    // Bandana tied knot on right side (observer's right, side = 1)
+    const bandanaKnot = bandanaGroup.add(node("bandana-knot", [0.62, -0.08, 0.22]));
+    bandanaKnot.scale = [0.15, 0.14, 0.12];
+    bandanaKnot.mesh(sphere(6, 5), colors.darkRed, 0.85);
+
+    // Bandana trailing ends pointing down-right
+    for (const [index, angle, sz] of [[0, -0.5, 0.38], [1, -0.8, 0.32]]) {
+      const tail = bandanaKnot.add(node(`bandana-tail-${index}`, [0.08 + index * 0.08, -0.15 - index * 0.1, 0]));
+      tail.rotation[2] = angle;
+      tail.scale = [0.12, sz, 0.08];
+      tail.mesh(geometry.cone(4, 0.01, 0.7), colors.redBandana, 0.82);
     }
 
-    for (const side of [-1, 1]) {
-      const earring = gear.add(node("gold-earring", [side * 0.98, -0.02, 0.29]));
-      earring.rotation[2] = side * 0.16;
-      earring.scale = [0.2, 0.2, 0.16];
-      earring.mesh(geometry.torus(0.37, 0.1, 14, 6), colors.gold, 0.24);
-
-      const earringStud = gear.add(node("earring-stud", [side * 0.97, 0.19, 0.37]));
-      earringStud.scale = [0.072, 0.072, 0.06];
-      earringStud.mesh(sphere(8, 6), [1, 0.75, 0.28], 0.22);
+    // Background floating orbital rings (as seen in logo.jpg)
+    const ringGroup = gear.add(node("background-orbital-rings", [0, 0.2, -0.5]));
+    for (const [radius, tiltX, tiltY, sideAngle] of [
+      [2.8, 0.2, 0.3, 0.1],
+      [3.2, -0.3, -0.2, -0.15],
+      [3.8, 0.1, -0.4, 0.2],
+    ]) {
+      const ring = ringGroup.add(node("orbital-ring"));
+      ring.rotation[0] = tiltX;
+      ring.rotation[1] = tiltY;
+      ring.rotation[2] = sideAngle;
+      ring.mesh(geometry.torus(radius, 0.015, 32, 6), [0.85, 0.48, 0.12], 0.1);
     }
 
-    const coin = (name, position, scale, rotation) => {
-      const item = gear.add(node(name, position));
-      item.rotation = rotation;
-      item.scale = scale;
-      item.mesh(geometry.torus(0.36, 0.12, 14, 6), colors.gold, 0.23);
-      const embossing = item.add(node("coin-embossing", [0, 0, 0.035]));
-      embossing.scale = [0.66, 0.66, 0.15];
-      embossing.mesh(sphere(7, 5), [0.98, 0.69, 0.27], 0.3);
-      return item;
-    };
+    // Floating gold coins surrounding the pirate fox (as in logo.jpg)
+    const coinPositions = [
+      [2.2, 2.6, -0.2],
+      [-2.4, -1.2, -0.1],
+      [2.5, -1.8, -0.3],
+      [-1.8, -2.8, -0.4],
+      [1.9, -3.1, -0.2],
+    ];
 
-    coin("floating-coin", [1.33, 2.12, -0.06], [0.22, 0.22, 0.11], [0.26, 0.38, -0.48]);
-    coin("floating-coin", [-1.3, -0.76, 0.18], [0.15, 0.15, 0.08], [0.2, -0.5, 0.55]);
-    coin("floating-coin", [1.3, -1.28, -0.02], [0.2, 0.2, 0.09], [-0.42, 0.2, 0.32]);
+    for (const [index, pos] of coinPositions.entries()) {
+      const coin = gear.add(node("floating-coin", pos));
+      coin.rotation[0] = 0.4 + index * 0.3;
+      coin.rotation[1] = 0.5 * index;
+      coin.scale = [0.22, 0.22, 0.04];
+      coin.mesh(geometry.cylinder(12, 0.2, 0.2), colors.gold, 0.25);
+    }
 
     return gear;
   };
