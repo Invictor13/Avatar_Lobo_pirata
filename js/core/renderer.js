@@ -55,23 +55,25 @@
 
     void main() {
       if (uWireframe > 0.5) {
-        gl_FragColor = vec4(0.98, 0.62, 0.18, 0.85);
+        gl_FragColor = vec4(1.0, 0.6, 0.1, 0.85);
         return;
       }
       vec3 normal = normalize(vNormal);
-      vec3 lightA = normalize(vec3(-0.35, 0.75, 0.85));
-      vec3 lightB = normalize(vec3(0.65, 0.3, 0.5));
+      vec3 lightA = normalize(vec3(0.0, 0.6, 0.8));
+      vec3 lightB = normalize(vec3(-0.6, 0.3, 0.5));
+      vec3 lightC = normalize(vec3(0.6, -0.4, 0.5));
       float diffuse = max(dot(normal, lightA), 0.0);
-      float fill = max(dot(normal, lightB), 0.0);
+      float fillA = max(dot(normal, lightB), 0.0);
+      float fillB = max(dot(normal, lightC), 0.0);
       vec3 viewDirection = normalize(uCamera - vPosition);
       vec3 halfVector = normalize(lightA + viewDirection);
-      float gloss = pow(max(dot(normal, halfVector), 0.0), mix(8.0, 64.0, 1.0 - uRoughness));
-      float subtleNoise = noise(vPosition * 25.0) * 0.04;
-      vec3 pigment = uColor * vColor * (0.96 + subtleNoise);
-      float rim = pow(1.0 - max(dot(normal, viewDirection), 0.0), 2.5);
-      vec3 color = pigment * (0.32 + 0.72 * diffuse + 0.22 * fill);
-      color += vec3(1.0, 0.65, 0.2) * gloss * (1.0 - uRoughness) * 0.7;
-      color += vec3(1.0, 0.42, 0.08) * rim * 0.45;
+      float gloss = pow(max(dot(normal, halfVector), 0.0), mix(12.0, 96.0, 1.0 - uRoughness));
+      float subtleNoise = noise(vPosition * 20.0) * 0.05;
+      vec3 pigment = uColor * vColor * (0.95 + subtleNoise);
+      float rim = pow(1.0 - max(dot(normal, viewDirection), 0.0), 2.2);
+      vec3 color = pigment * (0.35 + 0.68 * diffuse + 0.18 * fillA + 0.12 * fillB);
+      color += vec3(1.0, 0.72, 0.25) * gloss * (1.0 - uRoughness) * 0.8;
+      color += vec3(1.0, 0.45, 0.05) * rim * 0.55;
       gl_FragColor = vec4(color, 1.0);
     }
   `;
