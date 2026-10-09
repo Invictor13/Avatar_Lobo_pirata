@@ -1,42 +1,50 @@
 (() => {
   "use strict";
 
-  const { node, geometry, colors } = window.LoboPirata;
+  const { node, geometry } = window.LoboPirata;
+
+  const furOrange = [0xd84312, 0xef5617, 0xff741c, 0xc93412, 0xf68b2b, 0x9e2b15, 0xff9a38];
+  const furLight = [0xe5b68a, 0xf0c8a2, 0xb77e61, 0xffd8b6, 0x98664f];
+  const furRed = [0xaa2b13, 0xc23913, 0xe94d13, 0xf46b19, 0x862416];
+  const maneDark = [0x231b20, 0x3e2523, 0x6d2a1b, 0x9d351a, 0x492622];
 
   window.LoboPirata.parts.fur = (root) => {
-    const mane = root.add(node("facial-fur-spikes"));
+    const mane = root.add(node("wolf-mane-and-neck"));
 
-    // Distinct low-poly angular spikes on sides of the face (cheek & mane tufts)
-    for (const side of [-1, 1]) {
-      const tufts = [
-        // Upper temple spike
-        { name: "temple-spike", position: [0.68, 0.28, 0.42], rotation: [0.1, 0, -side * 1.95], scale: [0.24, 0.48, 0.16], color: colors.foxOrange },
-        // Mid cheek spike
-        { name: "mid-cheek-spike", position: [0.78, 0.02, 0.45], rotation: [0.15, 0, -side * 2.15], scale: [0.28, 0.56, 0.18], color: colors.foxAmber },
-        // Lower cheek main spike
-        { name: "lower-cheek-spike", position: [0.74, -0.28, 0.48], rotation: [0.2, 0, -side * 2.35], scale: [0.3, 0.58, 0.18], color: colors.foxOrange },
-        // Jaw/Neck side spike
-        { name: "jaw-side-spike", position: [0.62, -0.58, 0.42], rotation: [0.25, 0, -side * 2.5], scale: [0.26, 0.5, 0.16], color: colors.foxAmber },
-        // Inner cheek white/cream facet tuft
-        { name: "inner-cheek-tuft", position: [0.38, -0.32, 0.55], rotation: [0.1, 0, -side * 2.1], scale: [0.2, 0.4, 0.12], color: colors.cream },
+    // Neck volume
+    mane.mesh(geometry.ellipsoid(0, -0.55, -0.06, 0.76, 0.92, 0.43, 10, 6, maneDark), [1, 1, 1], 0.82);
+
+    // Layered mane tufts & spikes for both sides
+    for (const s of [-1, 1]) {
+      const x = (v) => s * v;
+
+      // Outer mane tuft 1 (red)
+      const p1 = [
+        [x(0.18), -0.30], [x(0.72), -0.40], [x(1.10), -0.63], [x(0.76), -0.61],
+        [x(1.05), -0.89], [x(0.52), -0.77], [x(0.28), -1.13], [x(0.10), -0.69]
       ];
+      mane.mesh(geometry.extrudedPolygon(p1, 0.26, 0.20, furRed), [1, 1, 1], 0.82);
 
-      for (const tuft of tufts) {
-        const spike = mane.add(node(tuft.name, [
-          side * tuft.position[0],
-          tuft.position[1],
-          tuft.position[2],
-        ]));
-        spike.rotation = [...tuft.rotation];
-        spike.scale = tuft.scale;
-        spike.mesh(geometry.cone(5, 0.01, 0.8), tuft.color, 0.82);
-      }
+      // Upper mane tuft (orange)
+      const p2 = [
+        [x(0.65), 0.22], [x(1.00), 0.31], [x(1.29), 0.07], [x(1.04), 0.02],
+        [x(1.22), -0.20], [x(0.88), -0.13], [x(0.61), -0.35]
+      ];
+      mane.mesh(geometry.extrudedPolygon(p2, 0.32, 0.19, furOrange), [1, 1, 1], 0.82);
 
-      // Eyebrow low-poly facet ridge
-      const eyebrow = mane.add(node("eyebrow-ridge", [side * 0.32, 0.45, 0.52]));
-      eyebrow.rotation[2] = side * 0.22;
-      eyebrow.scale = [0.32, 0.11, 0.12];
-      eyebrow.mesh(geometry.cone(5, 0.02, 0.75), colors.foxOrange, 0.82);
+      // Mid mane tuft (dark red/orange)
+      const p3 = [
+        [x(0.69), -0.17], [x(1.02), -0.22], [x(1.24), -0.49], [x(0.94), -0.43],
+        [x(1.08), -0.68], [x(0.73), -0.57], [x(0.50), -0.49]
+      ];
+      mane.mesh(geometry.extrudedPolygon(p3, 0.42, 0.16, [0x4c2523, 0x8a2b17, 0xc33b15, 0xf0681d]), [1, 1, 1], 0.82);
+
+      // Lower light mane tuft
+      const p4 = [
+        [x(0.45), -0.55], [x(0.74), -0.63], [x(0.86), -0.99], [x(0.61), -0.86],
+        [x(0.46), -1.18], [x(0.32), -0.86]
+      ];
+      mane.mesh(geometry.extrudedPolygon(p4, 0.45, 0.13, furLight), [1, 1, 1], 0.76);
     }
 
     return mane;
