@@ -22,13 +22,13 @@
     // Muzzle pads (left & right)
     for (const s of [-1, 1]) {
       const x = (v) => s * v;
-      muzzleGroup.mesh(geometry.ellipsoid(x(0.245), -0.51, 0.77, 0.22, 0.16, 0.18, 8, 5, [0xf0d3b0, 0xe4bd9a, 0xb77e61, 0xffe0bd]), [1, 1, 1], 0.75);
+      muzzleGroup.mesh(geometry.ellipsoid(x(0.245), -0.51, 0.77, 0.22, 0.16, 0.18, 8, 5, [0xfff0e0, 0xf5e6d3, 0xe5d0b8, 0xfff8ee]), [1, 1, 1], 0.75);
       const padTris = [
         [[x(0.09), -0.44, 0.91], [x(0.28), -0.43, 0.91], [x(0.30), -0.55, 0.92]],
         [[x(0.28), -0.43, 0.91], [x(0.43), -0.53, 0.83], [x(0.30), -0.55, 0.92]],
         [[x(0.30), -0.55, 0.92], [x(0.43), -0.53, 0.83], [x(0.23), -0.65, 0.92]]
       ];
-      muzzleGroup.mesh(geometry.surfaceTriangles(padTris, [0xd9ad88, 0xf6d3b0, 0xb77d60]), [1, 1, 1], 0.75);
+      muzzleGroup.mesh(geometry.surfaceTriangles(padTris, [0xf5e6d3, 0xfff0e0, 0xe5d0b8]), [1, 1, 1], 0.75);
     }
 
     // Black nose tip and nostrils

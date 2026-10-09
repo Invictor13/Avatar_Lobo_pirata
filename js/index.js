@@ -85,7 +85,7 @@
     const eyelidsToAnimate = face.eyelids || (face.eyelid ? [face.eyelid] : []);
     for (const lid of eyelidsToAnimate) {
       lid.scale[1] = 0.001 + blink * 1.05;
-      lid.position[1] = -blink * 0.01;
+      lid.position[1] = 0.46 - blink * 0.05;
     }
 
     // Talking speech animation loop

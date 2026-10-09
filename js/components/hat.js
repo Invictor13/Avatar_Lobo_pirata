@@ -4,7 +4,7 @@
   const { node, geometry, colors } = window.LoboPirata;
   const sphere = (w = 10, h = 6) => geometry.sphere(w, h);
 
-  const boneColors = [0xfbf9f5, 0xf0ede6, 0xe5e0d8, 0xffffff];
+  const whiteBoneColor = 0xffffff;
   const darkBone = [0x050505, 0x000000];
 
   window.LoboPirata.parts.hat = (root) => {
@@ -51,60 +51,60 @@
       ], 0.035, 6), colors.hatGold, 0.28);
 
     // --- ICONIC BONE-WHITE PIRATE SKULL & CROSSBONES EMBLEM ---
-    // Mounted directly on top of front turned-up brim lip for full visibility
-    const skullGroup = hat.add(node("skull-emblem-group", [0, 0.33, 0.65]));
-    skullGroup.rotation[0] = 0.25;
+    // Positioned in front of the hat brim lip
+    const skullGroup = hat.add(node("skull-emblem-group", [0, 0.38, 0.83]));
+    skullGroup.rotation[0] = 0.15;
     skullGroup.scale = [1.25, 1.25, 1.25];
 
-    // 1. Crossbones behind skull (X shape using clean tubes)
-    const boneRadius = 0.022;
+    // 1. Crossbones behind skull (X shape with 4 prominent outward-facing arms)
+    const boneRadius = 0.028;
     const crossbone1 = skullGroup.add(node("crossbone-1"));
-    crossbone1.mesh(geometry.tube([[-0.18, -0.18, -0.01], [0.18, 0.18, -0.01]], boneRadius, 6), boneColors, 0.35);
+    crossbone1.mesh(geometry.tube([[-0.28, -0.22, 0.06], [0.28, 0.24, 0.01]], boneRadius, 6), whiteBoneColor, 0.2);
 
     const crossbone2 = skullGroup.add(node("crossbone-2"));
-    crossbone2.mesh(geometry.tube([[-0.18, 0.18, -0.01], [0.18, -0.18, -0.01]], boneRadius, 6), boneColors, 0.35);
+    crossbone2.mesh(geometry.tube([[-0.28, 0.24, 0.01], [0.28, -0.22, 0.06]], boneRadius, 6), whiteBoneColor, 0.2);
 
-    // Bone ends (knobs on each tip)
+    // Bone ends (knobs on each of the 4 tips of the X)
     const boneTips = [
-      [-0.18, 0.18], [0.18, 0.18], [-0.18, -0.18], [0.18, -0.18]
+      [-0.28, 0.24, 0.01], [0.28, 0.24, 0.01], [-0.28, -0.22, 0.06], [0.28, -0.22, 0.06]
     ];
-    for (const [bx, by] of boneTips) {
-      for (const [ox, oy] of [[-0.018, 0.012], [0.018, -0.012]]) {
-        const knob = skullGroup.add(node("bone-knob", [bx + ox, by + oy, -0.01]));
-        knob.scale = [0.028, 0.028, 0.022];
-        knob.mesh(sphere(6, 4), boneColors, 0.35);
+    for (const [bx, by, bz] of boneTips) {
+      for (const [ox, oy] of [[-0.02, 0.015], [0.02, -0.015]]) {
+        const knob = skullGroup.add(node("bone-knob", [bx + ox, by + oy, bz]));
+        knob.scale = [0.038, 0.038, 0.032];
+        knob.mesh(sphere(6, 4), whiteBoneColor, 0.2);
       }
     }
 
     // 2. Skull Cranium (Main head dome)
-    const cranium = skullGroup.add(node("skull-cranium", [0, 0.04, 0.01]));
-    cranium.mesh(geometry.ellipsoid(0, 0, 0, 0.12, 0.11, 0.05, 10, 8, boneColors), [1, 1, 1], 0.35);
+    const cranium = skullGroup.add(node("skull-cranium", [0, 0.04, 0.03]));
+    cranium.mesh(geometry.ellipsoid(0, 0, 0, 0.12, 0.11, 0.05, 10, 8, [0xffffff, 0xfbfbfb]), whiteBoneColor, 0.2);
 
     // Brow Ridge
-    const browRidge = skullGroup.add(node("skull-brow", [0, 0.065, 0.035]));
-    browRidge.mesh(geometry.ellipsoid(0, 0, 0, 0.11, 0.025, 0.025, 8, 4, boneColors), [1, 1, 1], 0.35);
+    const browRidge = skullGroup.add(node("skull-brow", [0, 0.065, 0.055]));
+    browRidge.mesh(geometry.ellipsoid(0, 0, 0, 0.11, 0.025, 0.025, 8, 4, [0xffffff]), whiteBoneColor, 0.2);
 
     // 3. Eye Sockets (Dark black recesses)
     for (const side of [-1, 1]) {
-      const socket = skullGroup.add(node("skull-eye-socket", [side * 0.042, 0.045, 0.04]));
+      const socket = skullGroup.add(node("skull-eye-socket", [side * 0.042, 0.045, 0.06]));
       socket.rotation[2] = -side * 0.2;
       socket.mesh(geometry.ellipsoid(0, 0, 0, 0.032, 0.036, 0.018, 8, 6, darkBone), [1, 1, 1], 0.95);
     }
 
     // 4. Nasal Cavity (Dark inverted triangle)
-    const noseCavity = skullGroup.add(node("skull-nose-cavity", [0, 0.012, 0.042]));
-    noseCavity.rotation[0] = Math.PI; // upside down cone for nose cavity
+    const noseCavity = skullGroup.add(node("skull-nose-cavity", [0, 0.012, 0.062]));
+    noseCavity.rotation[0] = Math.PI;
     noseCavity.scale = [0.022, 0.025, 0.015];
     noseCavity.mesh(geometry.cone(4, 0.0, 0.5), darkBone, 0.95);
 
     // 5. Maxilla / Jaw & Teeth
-    const maxilla = skullGroup.add(node("skull-maxilla", [0, -0.038, 0.028]));
-    maxilla.mesh(geometry.ellipsoid(0, 0, 0, 0.07, 0.035, 0.03, 8, 6, boneColors), [1, 1, 1], 0.35);
+    const maxilla = skullGroup.add(node("skull-maxilla", [0, -0.038, 0.048]));
+    maxilla.mesh(geometry.ellipsoid(0, 0, 0, 0.07, 0.035, 0.03, 8, 6, [0xffffff]), whiteBoneColor, 0.2);
 
     // Individual teeth detail
     for (const tx of [-0.032, -0.011, 0.011, 0.032]) {
-      const tooth = skullGroup.add(node("skull-tooth", [tx, -0.055, 0.036]));
-      tooth.mesh(geometry.ellipsoid(0, 0, 0, 0.007, 0.014, 0.008, 6, 4, [0xffffff, 0xf2eee3]), [1, 1, 1], 0.3);
+      const tooth = skullGroup.add(node("skull-tooth", [tx, -0.055, 0.056]));
+      tooth.mesh(geometry.ellipsoid(0, 0, 0, 0.007, 0.014, 0.008, 6, 4, [0xffffff]), whiteBoneColor, 0.2);
     }
 
     return hat;

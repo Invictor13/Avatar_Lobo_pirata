@@ -4,7 +4,7 @@
   const { node, geometry } = window.LoboPirata;
 
   const furOrange = [0xd84312, 0xef5617, 0xff741c, 0xc93412, 0xf68b2b, 0x9e2b15, 0xff9a38];
-  const furLight = [0xe5b68a, 0xf0c8a2, 0xb77e61, 0xffd8b6, 0x98664f];
+  const furLight = [0xf5e6d3, 0xfff0e0, 0xe5d0b8, 0xfff8ee, 0xd0beaa];
   const furRed = [0xaa2b13, 0xc23913, 0xe94d13, 0xf46b19, 0x862416];
   const maneDark = [0x231b20, 0x3e2523, 0x6d2a1b, 0x9d351a, 0x492622];
 
@@ -44,7 +44,7 @@
         [x(0.45), -0.55], [x(0.74), -0.63], [x(0.86), -0.99], [x(0.61), -0.86],
         [x(0.46), -1.18], [x(0.32), -0.86]
       ];
-      mane.mesh(geometry.extrudedPolygon(p4, 0.45, 0.13, furLight), [1, 1, 1], 0.76);
+      mane.mesh(geometry.extrudedPolygon(p4, 0.45, 0.13, [0xffffff, 0xffffff, 0xfafafa]), [1, 1, 1], 0.76);
     }
 
     return mane;
