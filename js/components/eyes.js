@@ -39,15 +39,15 @@
       eyeAssembly.mesh(geometry.ellipsoid(s * 0.43, 0.44, 0.52, 0.018, 0.015, 0.008, 5, 3, [0xfff5e0, 0xffffff]), [1, 1, 1], 0.1);
       eyeAssembly.mesh(geometry.ellipsoid(s * 0.50, 0.38, 0.518, 0.009, 0.009, 0.005, 4, 3, [0xffefa0]), [1, 1, 1], 0.1);
 
-      // Menacing Slanted Eyebrow Ridge (Dark Black, slanted inwards down towards nose)
-      const brow = eyeAssembly.add(node("menacing-brow", [s * 0.45, 0.47, 0.505]));
-      brow.rotation[2] = -s * 0.35; // Inward aggressive slant
-      brow.mesh(geometry.ellipsoid(0, 0, 0, 0.16, 0.04, 0.025, 8, 4, [0x111111, 0x1e1e24, 0x08080a]), [1, 1, 1], 0.82);
+      // Menacing Slanted Eyebrow Ridge (Dark Black, inner corner down near nose, outer corner up towards ears: \ /)
+      const brow = eyeAssembly.add(node("menacing-brow", [s * 0.45, 0.475, 0.51]));
+      brow.rotation[2] = s * 0.38; // Aggressive menacing slant \ /
+      brow.mesh(geometry.ellipsoid(0, 0, 0, 0.17, 0.045, 0.025, 8, 4, [0x111111, 0x1e1e24, 0x08080a]), [1, 1, 1], 0.82);
 
       // Menacing Upper Eyelid Fold (Dark Black)
-      const angryFold = eyeAssembly.add(node("angry-eyelid-fold", [s * 0.45, 0.445, 0.51]));
-      angryFold.rotation[2] = -s * 0.30;
-      angryFold.mesh(geometry.ellipsoid(0, 0, 0, 0.14, 0.03, 0.02, 8, 4, [0x18181c, 0x222228, 0x101014]), [1, 1, 1], 0.8);
+      const angryFold = eyeAssembly.add(node("angry-eyelid-fold", [s * 0.45, 0.445, 0.515]));
+      angryFold.rotation[2] = s * 0.32;
+      angryFold.mesh(geometry.ellipsoid(0, 0, 0, 0.15, 0.035, 0.02, 8, 4, [0x18181c, 0x222228, 0x101014]), [1, 1, 1], 0.8);
 
       // Animated Eyelid for Blinking (Dark Black)
       const eyelid = eyeAssembly.add(node("eyelid", [eyeX, 0.41, 0.515]));
