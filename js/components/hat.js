@@ -53,6 +53,7 @@
     // --- ICONIC BONE-WHITE PIRATE SKULL & CROSSBONES EMBLEM ---
     // Positioned in front of the hat brim lip
     const skullGroup = hat.add(node("skull-emblem-group", [0, 0.38, 0.83]));
+    skullGroup.userData = { basePosition: [0, 0.38, 0.83], baseRotation: [0.15, 0, 0] };
     skullGroup.rotation[0] = 0.15;
     skullGroup.scale = [0.85, 0.85, 0.85];
 

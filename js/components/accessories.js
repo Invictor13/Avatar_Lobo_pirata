@@ -42,42 +42,58 @@
       tail.mesh(geometry.cone(4, 0.01, 0.7), colors.redBandana, 0.82);
     }
 
-    // 3D Floating coins & Orbits
+    // 3D Floating coins & Orbits - Background rings contouring the wolf
     const orbits = gear.add(node("orbits-group"));
-    const ring1 = orbits.add(node("orbit-ring-1", [0, 0.28, -0.75]));
-    ring1.scale = [1.12, 1, 1];
-    ring1.mesh(geometry.torus(1.83, 0.008, 24, 6), [0.46, 0.34, 0.24], 0.6);
 
-    const ring2 = orbits.add(node("orbit-ring-2", [0, 0.28, -0.65]));
-    ring2.rotation = [1.06, 0.18, -0.48];
-    ring2.scale = [1, 0.96, 1];
-    ring2.mesh(geometry.torus(2.12, 0.007, 24, 6), [0.46, 0.34, 0.24], 0.6);
+    // Ring 1: Outer framing ring behind the wolf (z = -1.2 to stay behind head/hat/ears)
+    const ring1Node = orbits.add(node("orbit-ring-1-group", [0, 0.1, -1.2]));
+    ring1Node.rotation = [0.15, 0, 0.22];
+    const ring1 = ring1Node.add(node("orbit-ring-1"));
+    ring1.scale = [1.18, 1.15, 1];
+    ring1.mesh(geometry.torus(2.35, 0.012, 32, 8), [0.82, 0.62, 0.22], 0.4);
 
-    const coinData = [
-      { p: [0.83, 2.62, -0.05], r: 0.15, rot: [0.20, 0.25, 0.37] },
-      { p: [-1.27, -0.78, -0.03], r: 0.13, rot: [0.28, -0.38, 0.5] },
-      { p: [1.48, -0.42, 0.02], r: 0.085, rot: [0.1, 0.2, -0.4] },
-      { p: [0.99, -1.48, 0.03], r: 0.12, rot: [0.15, -0.2, 0.5] },
-      { p: [-0.84, -1.88, -0.04], r: 0.07, rot: [0.3, 0.25, -0.4] }
+    // Ring 2: Inner framing ring behind the wolf (z = -1.15)
+    const ring2Node = orbits.add(node("orbit-ring-2-group", [0, 0.1, -1.15]));
+    ring2Node.rotation = [-0.2, 0.12, -0.38];
+    const ring2 = ring2Node.add(node("orbit-ring-2"));
+    ring2.scale = [1.1, 1.08, 1];
+    ring2.mesh(geometry.torus(1.95, 0.01, 32, 8), [0.92, 0.72, 0.26], 0.35);
+
+    // Coins attached to orbit rings
+    const coinsGroup = gear.add(node("orbit-coins-group"));
+
+    // 8 coins distributed along the 2 orbit paths
+    const coinConfigs = [
+      // Ring 1 coins (radius ~2.35, scaled by ring scale)
+      { ring: 1, angle: 0.2, radiusX: 2.35 * 1.18, radiusY: 2.35 * 1.15, size: 0.14, speed: 0.6 },
+      { ring: 1, angle: 1.7, radiusX: 2.35 * 1.18, radiusY: 2.35 * 1.15, size: 0.12, speed: 0.6 },
+      { ring: 1, angle: 3.3, radiusX: 2.35 * 1.18, radiusY: 2.35 * 1.15, size: 0.15, speed: 0.6 },
+      { ring: 1, angle: 4.8, radiusX: 2.35 * 1.18, radiusY: 2.35 * 1.15, size: 0.11, speed: 0.6 },
+
+      // Ring 2 coins (radius ~1.95, scaled by ring scale)
+      { ring: 2, angle: 0.8, radiusX: 1.95 * 1.1, radiusY: 1.95 * 1.08, size: 0.13, speed: -0.5 },
+      { ring: 2, angle: 2.4, radiusX: 1.95 * 1.1, radiusY: 1.95 * 1.08, size: 0.10, speed: -0.5 },
+      { ring: 2, angle: 4.0, radiusX: 1.95 * 1.1, radiusY: 1.95 * 1.08, size: 0.14, speed: -0.5 },
+      { ring: 2, angle: 5.4, radiusX: 1.95 * 1.1, radiusY: 1.95 * 1.08, size: 0.12, speed: -0.5 },
     ];
 
-    coinData.forEach((coin, i) => {
-      const coinNode = gear.add(node("floating-coin", coin.p));
-      coinNode.rotation = [...coin.rot];
+    coinConfigs.forEach((cfg, idx) => {
+      const coinParent = coinsGroup.add(node(`orbit-coin-parent-${idx}`, [0, 0.1, cfg.ring === 1 ? -1.2 : -1.15]));
+      coinParent.rotation = cfg.ring === 1 ? [0.15, 0, 0.22] : [-0.2, 0.12, -0.38];
 
-      // Coin disc
-      const coinMeshNode = coinNode.add(node("coin-body"));
-      coinMeshNode.rotation[0] = Math.PI / 2;
-      coinMeshNode.mesh(geometry.cylinder(12, coin.r, coin.r), colors.gold, 0.28);
-      coinMeshNode.scale = [1, coin.r * 0.28, 1];
+      const coinNode = coinParent.add(node("orbit-coin", [0, 0, 0]));
+      coinNode.userData = { ...cfg, baseAngle: cfg.angle };
 
-      // Coin rim
-      const coinRim = coinNode.add(node("coin-rim", [0, 0, coin.r * 0.18]));
-      coinRim.mesh(geometry.torus(coin.r * 0.65, coin.r * 0.10, 12, 6), colors.hatGold, 0.26);
+      const coinBody = coinNode.add(node("coin-body"));
+      coinBody.rotation[0] = Math.PI / 2;
+      coinBody.mesh(geometry.cylinder(12, cfg.size, cfg.size), colors.gold, 0.25);
+      coinBody.scale = [1, cfg.size * 0.28, 1];
 
-      // Coin emblem
-      const coinCenter = coinNode.add(node("coin-emblem", [0, 0, coin.r * 0.2]));
-      coinCenter.mesh(geometry.ellipsoid(0, 0, 0, coin.r * 0.17, coin.r * 0.17, coin.r * 0.025, 7, 4, [0xffda7b, 0xc18a36, 0xf4c05a]), [1, 1, 1], 0.28);
+      const coinRim = coinNode.add(node("coin-rim", [0, 0, cfg.size * 0.18]));
+      coinRim.mesh(geometry.torus(cfg.size * 0.65, cfg.size * 0.10, 12, 6), colors.hatGold, 0.24);
+
+      const coinCenter = coinNode.add(node("coin-emblem", [0, 0, cfg.size * 0.2]));
+      coinCenter.mesh(geometry.ellipsoid(0, 0, 0, cfg.size * 0.17, cfg.size * 0.17, cfg.size * 0.025, 7, 4, [0xffda7b, 0xc18a36, 0xf4c05a]), [1, 1, 1], 0.25);
     });
 
     return gear;
