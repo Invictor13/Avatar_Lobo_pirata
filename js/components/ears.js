@@ -1,45 +1,57 @@
 (() => {
   "use strict";
 
-  const { node, geometry, colors } = window.LoboPirata;
+  const { node, geometry } = window.LoboPirata;
+
+  const earOuter = [0x96280f, 0xb93212, 0xef5819, 0xff8a22, 0xd33b12, 0x74301f];
+  const earInner = [0x1b1720, 0x3c2022, 0x62291f, 0x171820, 0x8b4934];
+  const innerHighlights = [0xb78266, 0xd4a087, 0x7a4938, 0xe2b49a];
+  const goldColor = 0xffcf69;
 
   window.LoboPirata.parts.ears = (root) => {
-    const pair = root.add(node("ears"));
-    for (const side of [-1, 1]) {
-      const earGroup = pair.add(node(side < 0 ? "left-ear-group" : "right-ear-group", [side * 0.62, 0.72, -0.05]));
-      earGroup.rotation[2] = -side * 0.22;
+    const earsGroup = root.add(node("wolf-ears"));
 
-      // Main tall outer ear cone
-      const outer = earGroup.add(node("outer-ear", [0, 0.65, 0]));
-      outer.scale = [0.42, 1.45, 0.25];
-      outer.mesh(geometry.cone(6, 0.02, 0.85), colors.foxOrange, 0.82);
+    for (const s of [-1, 1]) {
+      const x = (v) => s * v;
+      const earNode = earsGroup.add(node(s === -1 ? "left-ear" : "right-ear"));
 
-      // Outer rim facet
-      const outerRim = earGroup.add(node("outer-rim", [side * 0.15, 0.65, -0.02]));
-      outerRim.scale = [0.28, 1.38, 0.2];
-      outerRim.mesh(geometry.cone(5, 0.01, 0.8), colors.foxAmber, 0.8);
+      // Outer ear shell
+      const outerPoly = [
+        [x(0.34), 0.60], [x(0.42), 1.26], [x(0.72), 2.36], [x(0.93), 2.52],
+        [x(1.15), 2.31], [x(1.16), 1.86], [x(1.08), 1.25], [x(0.89), 0.66], [x(0.60), 0.51]
+      ];
+      earNode.mesh(geometry.extrudedPolygon(outerPoly, 0.02, 0.36, earOuter), [1, 1, 1], 0.8);
 
-      // Inner ear dark cavity
-      const innerDark = earGroup.add(node("inner-dark", [0, 0.58, 0.08]));
-      innerDark.scale = [0.28, 1.15, 0.12];
-      innerDark.mesh(geometry.cone(5, 0.01, 0.75), colors.darkFur, 0.92);
+      // Inner ear concha
+      const innerPoly = [
+        [x(0.55), 0.88], [x(0.56), 1.42], [x(0.79), 2.19], [x(0.91), 2.30],
+        [x(1.03), 2.11], [x(1.02), 1.68], [x(0.91), 1.20], [x(0.76), 0.86]
+      ];
+      earNode.mesh(geometry.extrudedPolygon(innerPoly, 0.235, 0.035, earInner), [1, 1, 1], 0.82);
 
-      // Inner ear cream highlight facet
-      const innerCream = earGroup.add(node("inner-cream", [-side * 0.04, 0.52, 0.12]));
-      innerCream.scale = [0.18, 0.85, 0.08];
-      innerCream.mesh(geometry.cone(4, 0.01, 0.7), colors.cream, 0.85);
+      // Faceted inner ear highlights
+      const innerTris = [
+        [[x(0.58), 1.04, 0.265], [x(0.65), 1.47, 0.265], [x(0.86), 2.14, 0.265]],
+        [[x(0.65), 1.47, 0.265], [x(0.97), 1.69, 0.265], [x(0.86), 2.14, 0.265]],
+        [[x(0.58), 1.04, 0.265], [x(0.76), 0.94, 0.265], [x(0.65), 1.47, 0.265]],
+        [[x(0.65), 1.47, 0.265], [x(0.97), 1.69, 0.265], [x(0.81), 1.32, 0.265]]
+      ];
+      earNode.mesh(geometry.surfaceTriangles(innerTris, innerHighlights), [1, 1, 1], 0.78);
 
-      // Earring group
-      const earringGroup = earGroup.add(node(side < 0 ? "left-earring" : "right-earring", [-side * 0.22, 0.28, 0.12]));
-      earringGroup.rotation[0] = 0.2;
-      earringGroup.rotation[1] = side * 0.3;
-      earringGroup.rotation[2] = -side * 0.2;
+      // Gold ear trim along upper outer edge
+      const trimPts = [
+        [x(0.42), 1.26, 0.215], [x(0.72), 2.36, 0.215], [x(0.93), 2.52, 0.215],
+        [x(1.15), 2.31, 0.215], [x(1.16), 1.86, 0.215]
+      ];
+      earNode.mesh(geometry.tube(trimPts, 0.012, 6), goldColor, 0.3);
 
-      for (const [offsetY, offsetZ, ringScale] of [[0, 0, 0.15], [-0.14, 0.02, 0.13]]) {
-        const ring = earringGroup.add(node("hoop-ring", [0, offsetY, offsetZ]));
-        ring.mesh(geometry.torus(ringScale, 0.03, 12, 6), colors.gold, 0.22);
-      }
+      // Gold earring
+      const earring = earNode.add(node("gold-earring", [s * 1.075, 0.02, 0.49]));
+      earring.mesh(geometry.torus(0.155, 0.027, 9, 6), goldColor, 0.28);
+      earring.mesh(geometry.ellipsoid(0, 0.17, 0, 0.045, 0.06, 0.055, 7, 4, [0xffd36a, 0xd4912c]), goldColor, 0.28);
+      earring.mesh(geometry.ellipsoid(0, -0.155, 0, 0.04, 0.045, 0.045, 7, 4, [0xd4912c, 0xffc34f]), goldColor, 0.28);
     }
-    return pair;
+
+    return earsGroup;
   };
 })();

@@ -13,6 +13,29 @@
     return [v[0] / length, v[1] / length, v[2] / length];
   };
 
+  function parseColor(c) {
+    if (typeof c === "number") {
+      if (c > 0 && c <= 2) {
+        return [c, c, c];
+      }
+      return [
+        ((c >> 16) & 255) / 255,
+        ((c >> 8) & 255) / 255,
+        (c & 255) / 255,
+      ];
+    }
+    if (Array.isArray(c)) return c;
+    return [1, 1, 1];
+  }
+
+  function pickColor(palette, seed = 0) {
+    if (!palette) return [1, 1, 1];
+    if (!Array.isArray(palette)) return parseColor(palette);
+    if (palette.length === 0) return [1, 1, 1];
+    const idx = Math.abs(seed) % palette.length;
+    return parseColor(palette[idx]);
+  }
+
   function triangles(faces) {
     const positions = [];
     const normals = [];
@@ -26,10 +49,22 @@
       ));
       seed = (seed * 16807) % 2147483647;
       const variation = 0.91 + (seed / 2147483647) * 0.18;
+
+      let rgb;
+      if (typeof tint === "number" && tint <= 2) {
+        rgb = [tint, tint, tint];
+      } else {
+        rgb = parseColor(tint);
+      }
+
       for (const vertex of [a, b, c]) {
         positions.push(...vertex);
         normals.push(...normal);
-        colors.push(variation * tint, variation * tint, variation * tint);
+        colors.push(
+          Math.min(1, Math.max(0, rgb[0] * variation)),
+          Math.min(1, Math.max(0, rgb[1] * variation)),
+          Math.min(1, Math.max(0, rgb[2] * variation))
+        );
       }
     }
     return {
@@ -37,6 +72,94 @@
       normals: new Float32Array(normals),
       colors: new Float32Array(colors),
     };
+  }
+
+  function extrudedPolygon(points, z, thickness, palette) {
+    const frontZ = z + thickness / 2;
+    const backZ = z - thickness / 2;
+    const center = points.reduce((s, p) => [s[0] + p[0] / points.length, s[1] + p[1] / points.length], [0, 0]);
+    const fc = [center[0], center[1], frontZ];
+    const bc = [center[0], center[1], backZ];
+    const faces = [];
+    for (let i = 0; i < points.length; i++) {
+      const p = points[i];
+      const q = points[(i + 1) % points.length];
+      const pf = [p[0], p[1], frontZ];
+      const qf = [q[0], q[1], frontZ];
+      const pb = [p[0], p[1], backZ];
+      const qb = [q[0], q[1], backZ];
+
+      faces.push(
+        [fc, pf, qf, pickColor(palette, i * 4)],
+        [bc, qb, pb, pickColor(palette, i * 4 + 1)],
+        [pf, pb, qb, pickColor(palette, i * 4 + 2)],
+        [pf, qb, qf, pickColor(palette, i * 4 + 3)]
+      );
+    }
+    return triangles(faces);
+  }
+
+  function ellipsoid(cx, cy, cz, rx, ry, rz, segments = 10, rings = 6, palette = null, deformation = null) {
+    const grid = [];
+    for (let j = 0; j <= rings; j++) {
+      const phi = -Math.PI / 2 + (Math.PI * j) / rings;
+      const row = [];
+      for (let i = 0; i <= segments; i++) {
+        const theta = (2 * Math.PI * i) / segments;
+        const norm = [Math.cos(phi) * Math.cos(theta), Math.sin(phi), Math.cos(phi) * Math.sin(theta)];
+        let p = [cx + rx * norm[0], cy + ry * norm[1], cz + rz * norm[2]];
+        if (deformation) p = deformation(p, norm, i, j);
+        row.push(p);
+      }
+      grid.push(row);
+    }
+    const faces = [];
+    let count = 0;
+    for (let j = 0; j < rings; j++) {
+      for (let i = 0; i < segments; i++) {
+        const a = grid[j][i], b = grid[j][i + 1], c = grid[j + 1][i], d = grid[j + 1][i + 1];
+        faces.push([a, c, b, pickColor(palette, count++)]);
+        faces.push([b, c, d, pickColor(palette, count++)]);
+      }
+    }
+    return triangles(faces);
+  }
+
+  function surfaceTriangles(trianglesList, palette) {
+    const faces = [];
+    for (let i = 0; i < trianglesList.length; i++) {
+      const tri = trianglesList[i];
+      faces.push([tri[0], tri[1], tri[2], pickColor(palette, i)]);
+    }
+    return triangles(faces);
+  }
+
+  function snout(sections, segments = 9, palette = null) {
+    const grid = sections.map((sec) =>
+      Array.from({ length: segments }, (_, i) => {
+        const angle = (i * 2 * Math.PI) / segments;
+        return [Math.cos(angle) * sec.rx, sec.y + Math.sin(angle) * sec.ry, sec.z];
+      })
+    );
+    const faces = [];
+    let count = 0;
+    for (let j = 0; j < grid.length - 1; j++) {
+      for (let i = 0; i < segments; i++) {
+        const a = grid[j][i];
+        const b = grid[j][(i + 1) % segments];
+        const c = grid[j + 1][i];
+        const d = grid[j + 1][(i + 1) % segments];
+        faces.push([a, c, b, pickColor(palette, count++)]);
+        faces.push([b, c, d, pickColor(palette, count++)]);
+      }
+    }
+    const lastSec = sections[sections.length - 1];
+    const tip = [0, lastSec.y, lastSec.z + 0.025];
+    const lastGrid = grid[grid.length - 1];
+    for (let i = 0; i < segments; i++) {
+      faces.push([lastGrid[i], tip, lastGrid[(i + 1) % segments], pickColor(palette, count++)]);
+    }
+    return triangles(faces);
   }
 
   function sphereGeometry(widthSegments = 20, heightSegments = 14) {
@@ -245,8 +368,8 @@
     children: [],
     meshes: [],
     add(child) { this.children.push(child); return child; },
-    mesh(geometry, color, roughness = 0.76) {
-      this.meshes.push({ geometry, color, roughness });
+    mesh(geometry, color = [1, 1, 1], roughness = 0.76) {
+      this.meshes.push({ geometry, color: parseColor(color), roughness });
       return this;
     },
   });
@@ -260,6 +383,11 @@
     torus: torusGeometry,
     tube: tubeGeometry,
     triangles,
+    extrudedPolygon,
+    ellipsoid,
+    surfaceTriangles,
+    snout,
+    parseColor,
   };
   api.node = node;
   api.math.cross = cross;
