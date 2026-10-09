@@ -49,10 +49,10 @@
       angryFold.rotation[2] = s * 0.32;
       angryFold.mesh(geometry.ellipsoid(0, 0, 0, 0.15, 0.035, 0.02, 8, 4, [0x18181c, 0x222228, 0x101014]), [1, 1, 1], 0.8);
 
-      // Animated Eyelid for Blinking (Dark Black)
-      const eyelid = eyeAssembly.add(node("eyelid", [eyeX, 0.41, 0.515]));
+      // Animated Eyelid for Blinking (positioned over top of eye rim)
+      const eyelid = eyeAssembly.add(node("eyelid", [eyeX, 0.46, 0.512]));
       eyelid.scale = [1, 0.001, 1];
-      eyelid.mesh(geometry.ellipsoid(0, 0, 0, 0.14, 0.09, 0.025, 8, 4, [0x1e1e24, 0x111111]), [1, 1, 1], 0.8);
+      eyelid.mesh(geometry.ellipsoid(0, 0, 0, 0.14, 0.065, 0.022, 8, 4, [0x1e1e24, 0x111111]), [1, 1, 1], 0.8);
       eyelids.push(eyelid);
     }
 
