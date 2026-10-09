@@ -14,6 +14,122 @@
     </canvas>
     <p id="status" class="status" role="status" hidden></p>
   </main>
+
+  <footer class="portfolio-footer" id="portfolioFooter">
+    <div class="footer-card">
+      <div class="footer-header">
+        <div class="header-title-group">
+          <span class="label-title">PATRIMÔNIO CONSOLIDADO</span>
+          <button type="button" class="privacy-toggle" id="privacyToggle" aria-label="Alternar visibilidade dos valores" title="Alternar visibilidade">
+            <svg class="eye-icon eye-open" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+              <circle cx="12" cy="12" r="3"></circle>
+            </svg>
+            <svg class="eye-icon eye-closed" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none;">
+              <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+              <line x1="1" y1="1" x2="23" y2="23"></line>
+            </svg>
+          </button>
+        </div>
+
+        <nav class="footer-tabs" aria-label="Navegação do portfólio">
+          <div class="tab-indicator" id="tabIndicator"></div>
+          <button type="button" class="tab-btn active" data-tab="performance">Performance</button>
+          <button type="button" class="tab-btn" data-tab="alocacao">Alocação</button>
+          <button type="button" class="tab-btn" data-tab="proventos">Proventos</button>
+        </nav>
+      </div>
+
+      <div class="footer-body">
+        <!-- Performance Tab Content -->
+        <div class="tab-panel active" id="panel-performance">
+          <div class="panel-main-row">
+            <div class="main-metric">
+              <div class="balance-container">
+                <span class="currency">R$</span>
+                <span class="amount" data-value="156,46">156,46</span>
+              </div>
+              <span class="badge badge-positive" data-value="0,00%">+0,00%</span>
+            </div>
+
+            <div class="metrics-grid">
+              <div class="metric-card">
+                <span class="metric-label">HOJE</span>
+                <div class="metric-value-group">
+                  <span class="metric-value text-positive" data-value="+R$ 0,00 (0,00%)">+R$ 0,00 (0,00%)</span>
+                </div>
+              </div>
+
+              <div class="metric-card">
+                <span class="metric-label">MÊS</span>
+                <div class="metric-value-group">
+                  <span class="metric-value text-muted" data-value="--">--</span>
+                </div>
+              </div>
+
+              <div class="metric-card metric-card-benchmark">
+                <span class="metric-label">ALFA</span>
+                <div class="benchmark-pills">
+                  <span class="benchmark-pill">
+                    <span class="bm-name">CDI</span>
+                    <span class="bm-val positive" data-value="+0,04%">+0,04%</span>
+                  </span>
+                  <span class="bm-dot">•</span>
+                  <span class="benchmark-pill">
+                    <span class="bm-name">IBOV</span>
+                    <span class="bm-val positive" data-value="+0,62%">+0,62%</span>
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Alocacao Tab Content -->
+        <div class="tab-panel" id="panel-alocacao" style="display: none;">
+          <div class="allocation-summary">
+            <div class="allocation-item">
+              <span class="alloc-color alloc-rf"></span>
+              <span class="alloc-name">Renda Fixa</span>
+              <span class="alloc-pct" data-value="65,0%">65,0%</span>
+              <span class="alloc-val" data-value="R$ 101,70">R$ 101,70</span>
+            </div>
+            <div class="allocation-item">
+              <span class="alloc-color alloc-rv"></span>
+              <span class="alloc-name">Renda Variável</span>
+              <span class="alloc-pct" data-value="25,0%">25,0%</span>
+              <span class="alloc-val" data-value="R$ 39,11">R$ 39,11</span>
+            </div>
+            <div class="allocation-item">
+              <span class="alloc-color alloc-fiis"></span>
+              <span class="alloc-name">FIIs</span>
+              <span class="alloc-pct" data-value="10,0%">10,0%</span>
+              <span class="alloc-val" data-value="R$ 15,65">R$ 15,65</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Proventos Tab Content -->
+        <div class="tab-panel" id="panel-proventos" style="display: none;">
+          <div class="proventos-summary">
+            <div class="metric-card">
+              <span class="metric-label">PREVISTOS</span>
+              <span class="metric-value text-positive" data-value="R$ 1,25">R$ 1,25</span>
+            </div>
+            <div class="metric-card">
+              <span class="metric-label">RECEBIDOS NO MÊS</span>
+              <span class="metric-value text-positive" data-value="R$ 0,80">R$ 0,80</span>
+            </div>
+            <div class="metric-card">
+              <span class="metric-label">TOTAL ACUMULADO</span>
+              <span class="metric-value text-positive" data-value="R$ 12,40">R$ 12,40</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </footer>
+
   <script src="js/core/namespace.js?v=20261009-1047"></script>
   <script src="js/core/renderer.js?v=20261009-1047"></script>
   <script src="js/components/ears.js?v=20261009-1047"></script>
@@ -24,6 +140,7 @@
   <script src="js/components/muzzle.js?v=20261009-1047"></script>
   <script src="js/components/head.js?v=20261009-1047"></script>
   <script src="js/components/accessories.js?v=20261009-1047"></script>
+  <script src="js/components/portfolio-footer.js?v=20261009-1047"></script>
   <script src="js/index.js?v=20261009-1047"></script>
 </body>
 </html>
