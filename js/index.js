@@ -82,9 +82,10 @@
       }
     }
 
-    if (face.eyelid) {
-      face.eyelid.scale[1] = 0.001 + blink * 1.05;
-      face.eyelid.position[1] = -blink * 0.01;
+    const eyelidsToAnimate = face.eyelids || (face.eyelid ? [face.eyelid] : []);
+    for (const lid of eyelidsToAnimate) {
+      lid.scale[1] = 0.001 + blink * 1.05;
+      lid.position[1] = -blink * 0.01;
     }
 
     // Talking speech animation loop
