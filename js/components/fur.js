@@ -32,12 +32,12 @@
       ];
       mane.mesh(geometry.extrudedPolygon(p2, 0.32, 0.19, furOrange), [1, 1, 1], 0.82);
 
-      // Mid mane tuft (dark red/orange)
+      // Mid mane tuft (white cheek fur layer for symmetry)
       const p3 = [
         [x(0.69), -0.17], [x(1.02), -0.22], [x(1.24), -0.49], [x(0.94), -0.43],
         [x(1.08), -0.68], [x(0.73), -0.57], [x(0.50), -0.49]
       ];
-      mane.mesh(geometry.extrudedPolygon(p3, 0.42, 0.16, [0x4c2523, 0x8a2b17, 0xc33b15, 0xf0681d]), [1, 1, 1], 0.82);
+      mane.mesh(geometry.extrudedPolygon(p3, 0.42, 0.16, [0xffffff, 0xffffff, 0xfafafa, 0xf5f5f5]), [1, 1, 1], 0.76);
 
       // Lower light mane tuft
       const p4 = [
