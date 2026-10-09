@@ -6,7 +6,7 @@
   window.LoboPirata.parts.ears = (root) => {
     const pair = root.add(node("ears"));
     for (const side of [-1, 1]) {
-      const earGroup = pair.add(node(side < 0 ? "left-ear-group" : "right-ear-group", [side * 0.62, 0.52, -0.05]));
+      const earGroup = pair.add(node(side < 0 ? "left-ear-group" : "right-ear-group", [side * 0.62, 0.72, -0.05]));
       earGroup.rotation[2] = -side * 0.22;
 
       // Main tall outer ear cone
