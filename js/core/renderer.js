@@ -55,24 +55,23 @@
 
     void main() {
       if (uWireframe > 0.5) {
-        gl_FragColor = vec4(0.93, 0.68, 0.34, 0.76);
+        gl_FragColor = vec4(0.98, 0.62, 0.18, 0.85);
         return;
       }
       vec3 normal = normalize(vNormal);
-      vec3 lightA = normalize(vec3(-0.48, 0.82, 0.86));
-      vec3 lightB = normalize(vec3(0.74, 0.22, 0.54));
+      vec3 lightA = normalize(vec3(-0.35, 0.75, 0.85));
+      vec3 lightB = normalize(vec3(0.65, 0.3, 0.5));
       float diffuse = max(dot(normal, lightA), 0.0);
       float fill = max(dot(normal, lightB), 0.0);
       vec3 viewDirection = normalize(uCamera - vPosition);
       vec3 halfVector = normalize(lightA + viewDirection);
-      float gloss = pow(max(dot(normal, halfVector), 0.0), mix(10.0, 72.0, 1.0 - uRoughness));
-      float grain = noise(vPosition * 15.0) * 0.16 + noise(vPosition * 39.0) * 0.055;
-      float furStreak = sin(vPosition.y * 92.0 + noise(vPosition * 22.0) * 8.0) * 0.02;
-      vec3 pigment = uColor * vColor * (0.92 + grain + furStreak);
-      float rim = pow(1.0 - max(dot(normal, viewDirection), 0.0), 3.0);
-      vec3 color = pigment * (0.27 + 0.78 * diffuse + 0.26 * fill);
-      color += vec3(1.0, 0.73, 0.36) * gloss * (1.0 - uRoughness) * 0.8;
-      color += vec3(0.78, 0.29, 0.12) * rim * 0.27;
+      float gloss = pow(max(dot(normal, halfVector), 0.0), mix(8.0, 64.0, 1.0 - uRoughness));
+      float subtleNoise = noise(vPosition * 25.0) * 0.04;
+      vec3 pigment = uColor * vColor * (0.96 + subtleNoise);
+      float rim = pow(1.0 - max(dot(normal, viewDirection), 0.0), 2.5);
+      vec3 color = pigment * (0.32 + 0.72 * diffuse + 0.22 * fill);
+      color += vec3(1.0, 0.65, 0.2) * gloss * (1.0 - uRoughness) * 0.7;
+      color += vec3(1.0, 0.42, 0.08) * rim * 0.45;
       gl_FragColor = vec4(color, 1.0);
     }
   `;
@@ -300,16 +299,27 @@
 
   window.LoboPirata.renderer = { create };
   window.LoboPirata.colors = {
-    rust: [0.77, 0.19, 0.055],
-    orange: [0.94, 0.34, 0.055],
-    amber: [0.98, 0.56, 0.12],
-    cream: [0.75, 0.53, 0.39],
-    darkFur: [0.16, 0.075, 0.065],
-    innerEar: [0.48, 0.23, 0.2],
-    leather: [0.13, 0.105, 0.1],
-    black: [0.035, 0.04, 0.055],
-    gold: [0.91, 0.54, 0.12],
-    bone: [0.93, 0.78, 0.49],
-    white: [0.92, 0.82, 0.66],
+    foxOrange: [0.94, 0.33, 0.05],
+    foxAmber: [0.98, 0.55, 0.12],
+    foxDark: [0.28, 0.08, 0.06],
+    foxBurgundy: [0.48, 0.1, 0.08],
+    rust: [0.82, 0.22, 0.06],
+    orange: [0.94, 0.35, 0.06],
+    amber: [0.98, 0.58, 0.14],
+    cream: [0.92, 0.82, 0.72],
+    white: [0.96, 0.94, 0.9],
+    darkFur: [0.12, 0.08, 0.08],
+    innerEar: [0.24, 0.16, 0.16],
+    innerEarHighlight: [0.85, 0.8, 0.76],
+    leather: [0.15, 0.14, 0.14],
+    hatGold: [0.96, 0.68, 0.16],
+    gold: [0.96, 0.72, 0.18],
+    skullYellow: [0.96, 0.92, 0.65],
+    eyepatchFacet: [0.32, 0.3, 0.28],
+    redBandana: [0.78, 0.14, 0.09],
+    darkRed: [0.42, 0.06, 0.05],
+    eyeGlow: [1.0, 0.58, 0.04],
+    black: [0.03, 0.03, 0.04],
+    bone: [0.94, 0.88, 0.75],
   };
 })();

@@ -82,30 +82,43 @@
       }
     }
 
-    face.eyelid.scale[1] = 0.001 + blink * 0.145;
-    face.eyelid.position[1] = -blink * 0.006;
-    face.eyeball.scale[1] = 0.12 * (1 - blink * 0.94);
-    face.iris.scale[1] = 0.092 * (1 - blink * 0.97);
-    face.pupil.scale[1] = 0.071 * (1 - blink * 0.98);
+    if (face.eyelid) {
+      face.eyelid.scale[1] = 0.001 + blink * 0.145;
+      face.eyelid.position[1] = -blink * 0.006;
+      if (face.eyeball) face.eyeball.scale[1] = 0.12 * (1 - blink * 0.94);
+      if (face.iris) face.iris.scale[1] = 0.09 * (1 - blink * 0.97);
+      if (face.pupil) face.pupil.scale[1] = 0.075 * (1 - blink * 0.98);
+    }
 
+    // Talking speech animation loop
     const phrasePhase = seconds % 6.6;
     const talking = phrasePhase < 2.85
       ? Math.pow(Math.max(0, Math.sin(phrasePhase * 8.8)), 1.15) *
         (0.35 + Math.max(0, Math.sin(phrasePhase * 2.4)) * 0.65)
       : 0;
-    face.jaw.rotation[0] = talking * 0.43;
-    face.mouthCavity.scale[1] = 0.009 + talking * 0.09;
-    face.tongue.scale[1] = 0.025 + talking * 0.033;
-    face.tongue.position[1] = 0.005 - talking * 0.018;
-
-    const skullGem = hat.children[hat.children.length - 1];
-    skullGem.scale[1] = 0.055 + (Math.sin(seconds * 2.4) + 1) * 0.008;
-    for (const coin of accessories.children) {
-      if (coin.name === "floating-coin") coin.rotation[1] = seconds * 0.7;
+    if (face.jaw) face.jaw.rotation[0] = talking * 0.38;
+    if (face.mouthCavity) face.mouthCavity.scale[1] = 0.008 + talking * 0.08;
+    if (face.tongue) {
+      face.tongue.scale[1] = 0.02 + talking * 0.03;
+      face.tongue.position[1] = 0.005 - talking * 0.015;
     }
 
-    ears.children[0].rotation[2] = 0.12 + Math.sin(seconds * 1.7) * 0.012;
-    ears.children[3].rotation[2] = -0.12 - Math.sin(seconds * 1.7) * 0.012;
+    // Floating coins animation
+    for (const child of accessories.children) {
+      if (child.name === "floating-coin") {
+        child.rotation[1] = seconds * 1.2;
+        child.rotation[0] = 0.4 + Math.sin(seconds * 1.5 + child.position[0]) * 0.15;
+      }
+    }
+
+    // Ear wiggles
+    if (ears.children.length > 0) {
+      ears.children[0].rotation[2] = -0.16 + Math.sin(seconds * 1.7) * 0.015;
+    }
+    if (ears.children.length > 1) {
+      ears.children[1].rotation[2] = 0.16 - Math.sin(seconds * 1.7) * 0.015;
+    }
+
     view.render();
     window.requestAnimationFrame(animate);
   };
