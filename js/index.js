@@ -157,12 +157,50 @@
       face.tongue.position[1] = -talking * 0.015;
     }
 
-    // Floating coins animation
+    // Orbit rings subtle rotation & Floating coins orbiting along paths animation
     for (const child of accessories.children) {
-      if (child.name === "floating-coin") {
-        child.rotation[1] = seconds * 1.2;
-        child.rotation[0] = 0.4 + Math.sin(seconds * 1.5 + child.position[0]) * 0.15;
+      if (child.name === "orbits-group") {
+        for (const ringGroup of child.children) {
+          if (ringGroup.name === "orbit-ring-1-group") {
+            ringGroup.rotation[2] = 0.22 + Math.sin(seconds * 0.4) * 0.05;
+          } else if (ringGroup.name === "orbit-ring-2-group") {
+            ringGroup.rotation[2] = -0.38 - Math.sin(seconds * 0.35) * 0.05;
+          }
+        }
+      } else if (child.name === "orbit-coins-group") {
+        for (const parentNode of child.children) {
+          const coinNode = parentNode.children.find(c => c.name === "orbit-coin");
+          if (coinNode && coinNode.userData) {
+            const data = coinNode.userData;
+            const currentAngle = data.baseAngle + seconds * data.speed;
+
+            // Calculate orbital position along the ring ellipse
+            coinNode.position[0] = Math.cos(currentAngle) * data.radiusX;
+            coinNode.position[1] = Math.sin(currentAngle) * data.radiusY;
+            coinNode.position[2] = Math.sin(currentAngle * 2) * 0.05; // Slight depth weave
+
+            // Spin & tilt the coin on its own axis as it travels
+            coinNode.rotation[1] = currentAngle + seconds * 1.5;
+            coinNode.rotation[0] = Math.sin(seconds * 2 + data.baseAngle) * 0.35;
+          }
+        }
       }
+    }
+
+    // Enhanced movement animation for the skull emblem on the hat
+    const skullGroup = hat.children.find(c => c.name === "skull-emblem-group");
+    if (skullGroup && skullGroup.userData) {
+      const basePos = skullGroup.userData.basePosition;
+      const baseRot = skullGroup.userData.baseRotation;
+
+      // Gentle floating bobbing and tilting synced with breathing and speaking
+      const floatY = Math.sin(seconds * 2.2) * 0.015 + talking * 0.02;
+      const tiltZ = Math.sin(seconds * 1.6) * 0.06 + Math.cos(seconds * 0.9) * 0.03;
+      const pitchX = Math.cos(seconds * 2.0) * 0.04 + talking * 0.08;
+
+      skullGroup.position[1] = basePos[1] + floatY;
+      skullGroup.rotation[0] = baseRot[0] + pitchX;
+      skullGroup.rotation[2] = baseRot[2] + tiltZ;
     }
 
     // Ear wiggles
