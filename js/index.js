@@ -22,35 +22,45 @@
     return;
   }
 
-  let dragging = false;
-  let previousX = 0;
-  let previousY = 0;
   let zoom = 7.4;
-  let userYaw = 0;
-  let userPitch = 0;
+  let targetNormX = 0;
+  let targetNormY = 0;
+  let currentYaw = 0;
+  let currentPitch = 0;
+  let pupilOffsetX = 0;
+  let pupilOffsetY = 0;
   let blinkStartedAt = -1;
   let nextBlinkAt = 1.8;
+  let isSpinning = false;
+  let spinStartSeconds = 0;
+  const SPIN_DURATION = 1.2;
+
   const headScaleY = head.scale[1];
   view.setCameraDistance(zoom);
 
-  canvas.addEventListener("pointerdown", (event) => {
-    dragging = true;
-    previousX = event.clientX;
-    previousY = event.clientY;
-    canvas.setPointerCapture(event.pointerId);
+  // Trigger 360 spin animation
+  const trigger360Spin = (currentTimeSeconds) => {
+    if (!isSpinning) {
+      isSpinning = true;
+      spinStartSeconds = currentTimeSeconds;
+    }
+  };
+  window.triggerLoboSpin = trigger360Spin;
+
+  // Pointer tracking across window for head and eye movement
+  window.addEventListener("pointermove", (event) => {
+    targetNormX = (event.clientX / window.innerWidth - 0.5) * 2;
+    targetNormY = (event.clientY / window.innerHeight - 0.5) * 2;
   });
 
-  canvas.addEventListener("pointermove", (event) => {
-    if (!dragging) return;
-    userYaw += (event.clientX - previousX) * 0.008;
-    userPitch = Math.max(-0.62, Math.min(0.62, userPitch + (event.clientY - previousY) * 0.007));
-    previousX = event.clientX;
-    previousY = event.clientY;
+  // Click on wolf canvas triggers 360 spin
+  canvas.addEventListener("click", () => {
+    const seconds = performance.now() * 0.001;
+    trigger360Spin(seconds);
+    if (window.LoboPirataSpeech && typeof window.LoboPirataSpeech.speakRandom === "function") {
+      window.LoboPirataSpeech.speakRandom();
+    }
   });
-
-  const finishDrag = () => { dragging = false; };
-  canvas.addEventListener("pointerup", finishDrag);
-  canvas.addEventListener("pointercancel", finishDrag);
 
   canvas.addEventListener("wheel", (event) => {
     event.preventDefault();
@@ -65,9 +75,48 @@
 
   const animate = (time) => {
     const seconds = time * 0.001;
-    const idleSway = dragging ? 0 : Math.sin(seconds * 0.55);
-    model.rotation[0] = userPitch + idleSway * 0.022;
-    model.rotation[1] = userYaw + idleSway * 0.16;
+
+    // Smooth head mouse tracking
+    const targetYaw = targetNormX * 0.65;
+    const targetPitch = targetNormY * 0.38;
+    currentYaw += (targetYaw - currentYaw) * 0.08;
+    currentPitch += (targetPitch - currentPitch) * 0.08;
+
+    // 360 Spin animation calculation
+    let spinAngle = 0;
+    if (isSpinning) {
+      const spinProgress = (seconds - spinStartSeconds) / SPIN_DURATION;
+      if (spinProgress >= 1) {
+        isSpinning = false;
+        spinAngle = 0;
+      } else {
+        spinAngle = easeInOut(spinProgress) * Math.PI * 2;
+      }
+    }
+
+    const idleSway = Math.sin(seconds * 0.55);
+    model.rotation[0] = currentPitch + idleSway * 0.022;
+    model.rotation[1] = currentYaw + spinAngle + idleSway * 0.16;
+
+    // Smooth eye pupil tracking
+    const targetPupilX = targetNormX * 0.035;
+    const targetPupilY = -targetNormY * 0.025;
+    pupilOffsetX += (targetPupilX - pupilOffsetX) * 0.1;
+    pupilOffsetY += (targetPupilY - pupilOffsetY) * 0.1;
+
+    if (face.pupilNodes) {
+      for (const pNode of face.pupilNodes) {
+        if (pNode.iris && pNode.iris.basePosition) {
+          pNode.iris.position[0] = pNode.iris.basePosition[0] + pupilOffsetX * 0.7;
+          pNode.iris.position[1] = pNode.iris.basePosition[1] + pupilOffsetY * 0.7;
+        }
+        if (pNode.pupil && pNode.pupil.basePosition) {
+          pNode.pupil.position[0] = pNode.pupil.basePosition[0] + pupilOffsetX;
+          pNode.pupil.position[1] = pNode.pupil.basePosition[1] + pupilOffsetY;
+        }
+      }
+    }
+
     head.scale[1] = headScaleY * (1 + Math.sin(seconds * 2.1) * 0.006);
 
     if (seconds >= nextBlinkAt && blinkStartedAt < 0) blinkStartedAt = seconds;
@@ -89,15 +138,22 @@
     }
 
     // Talking speech animation loop
-    const phrasePhase = seconds % 6.6;
-    const talking = phrasePhase < 2.85
-      ? Math.pow(Math.max(0, Math.sin(phrasePhase * 8.8)), 1.15) *
-        (0.35 + Math.max(0, Math.sin(phrasePhase * 2.4)) * 0.65)
-      : 0;
-    if (face.jaw) face.jaw.rotation[0] = talking * 0.25;
-    if (face.mouthCavity) face.mouthCavity.scale[1] = 1.0 + talking * 0.8;
+    let talking = 0;
+    if (window.LoboPirataSpeech && typeof window.LoboPirataSpeech.getSpeakingFactor === "function") {
+      talking = window.LoboPirataSpeech.getSpeakingFactor(seconds);
+    }
+    if (talking === 0) {
+      // Gentle idle mouth movement when not actively speaking
+      const phrasePhase = seconds % 8.0;
+      talking = phrasePhase < 1.2
+        ? Math.pow(Math.max(0, Math.sin(phrasePhase * 5.0)), 1.5) * 0.15
+        : 0;
+    }
+
+    if (face.jaw) face.jaw.rotation[0] = talking * 0.28;
+    if (face.mouthCavity) face.mouthCavity.scale[1] = 1.0 + talking * 0.85;
     if (face.tongue) {
-      face.tongue.scale[1] = 1.0 + talking * 0.3;
+      face.tongue.scale[1] = 1.0 + talking * 0.35;
       face.tongue.position[1] = -talking * 0.015;
     }
 

@@ -54,7 +54,7 @@
     // Positioned in front of the hat brim lip
     const skullGroup = hat.add(node("skull-emblem-group", [0, 0.38, 0.83]));
     skullGroup.rotation[0] = 0.15;
-    skullGroup.scale = [1.25, 1.25, 1.25];
+    skullGroup.scale = [0.85, 0.85, 0.85];
 
     // 1. Crossbones behind skull (X shape with 4 prominent outward-facing arms)
     const boneRadius = 0.028;

@@ -14,6 +14,7 @@
 
     const eyelids = [];
     const eyes = [];
+    const pupilNodes = [];
 
     // Create both Right (s = 1) and Left (s = -1) eyes with fierce menacing look
     for (const s of [1, -1]) {
@@ -29,11 +30,15 @@
 
       // Intense Glowing Fiery Amber Iris
       const iris = eyeAssembly.add(node("iris", [eyeX, 0.41, 0.49]));
+      iris.basePosition = [eyeX, 0.41, 0.49];
       iris.mesh(geometry.ellipsoid(0, 0, 0, 0.125, 0.08, 0.025, 9, 5, [0xff2200, 0xff6600, 0xffa000, 0xc00800]), [1, 1, 1], 0.22);
 
       // Sharp Vertical Predator Slit Pupil
       const pupil = eyeAssembly.add(node("pupil", [s * (0.46 + 0.005), 0.41, 0.51]));
+      pupil.basePosition = [s * (0.46 + 0.005), 0.41, 0.51];
       pupil.mesh(geometry.ellipsoid(0, 0, 0, 0.02, 0.07, 0.015, 6, 4, [0x050202, 0x120404]), [1, 1, 1], 0.1);
+
+      pupilNodes.push({ iris, pupil });
 
       // Specular Glint / Highlights
       eyeAssembly.mesh(geometry.ellipsoid(s * 0.43, 0.44, 0.52, 0.018, 0.015, 0.008, 5, 3, [0xfff5e0, 0xffffff]), [1, 1, 1], 0.1);
@@ -56,6 +61,6 @@
       eyelids.push(eyelid);
     }
 
-    return { eyes: eyesGroup, eyelids, eyelid: eyelids[0] };
+    return { eyes: eyesGroup, pupilNodes, eyelids, eyelid: eyelids[0] };
   };
 })();
