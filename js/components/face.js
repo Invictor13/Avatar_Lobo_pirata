@@ -37,11 +37,11 @@
     for (const s of [-1, 1]) {
       const x = (v) => s * v;
 
-      // Outer orange fur flange
+      // Outer orange fur flange (trimmed lower boundary so orange fur doesn't bleed into white cheek beard)
       const flangePoly1 = makeCCW([
         [x(0.57), 0.55], [x(0.92), 0.43], [x(1.26), 0.14], [x(1.05), 0.08],
-        [x(1.22), -0.13], [x(0.94), -0.10], [x(1.08), -0.38], [x(0.80), -0.30],
-        [x(0.61), -0.47], [x(0.48), -0.05]
+        [x(1.22), -0.13], [x(0.94), -0.10], [x(0.82), -0.22], [x(0.52), -0.18],
+        [x(0.48), -0.05]
       ]);
       face.mesh(geometry.extrudedPolygon(flangePoly1, 0.34, 0.22, furOrange), [1, 1, 1], 0.82);
 

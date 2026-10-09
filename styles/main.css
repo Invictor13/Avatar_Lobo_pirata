@@ -34,6 +34,118 @@ body {
 
 #portrait:active { cursor: grabbing; }
 
+/* Speech Bubble Overlay */
+.speech-bubble {
+  position: fixed;
+  top: 32px;
+  left: 50%;
+  transform: translateX(-50%) translateY(-10px);
+  max-width: 90vw;
+  width: max-content;
+  padding: 14px 24px;
+  border-radius: 20px;
+  background: rgba(18, 14, 24, 0.92);
+  border: 2px solid #f68b2b;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6), 0 0 16px rgba(246, 139, 43, 0.3);
+  color: #fff0d8;
+  font-family: system-ui, -apple-system, sans-serif;
+  font-size: 1.15rem;
+  font-weight: 600;
+  text-align: center;
+  z-index: 100;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.speech-bubble::after {
+  content: "";
+  position: absolute;
+  bottom: -12px;
+  left: 50%;
+  transform: translateX(-50%);
+  border-width: 12px 10px 0;
+  border-style: solid;
+  border-color: #f68b2b transparent transparent;
+}
+
+.speech-bubble.visible {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+.speech-bubble.hidden {
+  opacity: 0;
+  transform: translateX(-50%) translateY(-10px);
+}
+
+/* Control Panel Bar */
+.control-panel {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 16px;
+  border-radius: 30px;
+  background: rgba(14, 16, 26, 0.85);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(246, 139, 43, 0.4);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+  z-index: 90;
+  max-width: 95vw;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.btn-pirate {
+  background: linear-gradient(135deg, #e94d13 0%, #a2290f 100%);
+  color: #ffffff;
+  border: none;
+  border-radius: 20px;
+  padding: 10px 18px;
+  font-size: 0.92rem;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  transition: transform 0.15s ease, background 0.2s ease, box-shadow 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.btn-pirate:hover {
+  background: linear-gradient(135deg, #ff6b2b 0%, #c23413 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(246, 139, 43, 0.4);
+}
+
+.btn-pirate:active {
+  transform: translateY(0);
+}
+
+.input-pirate {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 20px;
+  padding: 8px 14px;
+  color: #ffffff;
+  font-size: 0.9rem;
+  outline: none;
+  min-width: 180px;
+  transition: border-color 0.2s ease;
+}
+
+.input-pirate:focus {
+  border-color: #f68b2b;
+}
+
+.input-pirate::placeholder {
+  color: rgba(255, 255, 255, 0.5);
+}
+
 .status {
   position: fixed;
   inset: auto 18px 18px;
