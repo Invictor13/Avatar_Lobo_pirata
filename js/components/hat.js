@@ -51,8 +51,10 @@
       ], 0.035, 6), colors.hatGold, 0.28);
 
     // --- ICONIC BONE-WHITE PIRATE SKULL & CROSSBONES EMBLEM ---
-    const skullGroup = hat.add(node("skull-emblem-group", [0, 0.38, 0.56]));
-    skullGroup.rotation[0] = -0.12;
+    // Mounted directly on top of front turned-up brim lip for full visibility
+    const skullGroup = hat.add(node("skull-emblem-group", [0, 0.33, 0.65]));
+    skullGroup.rotation[0] = 0.25;
+    skullGroup.scale = [1.25, 1.25, 1.25];
 
     // 1. Crossbones behind skull (X shape using clean tubes)
     const boneRadius = 0.022;
