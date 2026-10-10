@@ -48,7 +48,7 @@
         [c[0] - a[0], c[1] - a[1], c[2] - a[2]],
       ));
       seed = (seed * 16807) % 2147483647;
-      const variation = 0.91 + (seed / 2147483647) * 0.18;
+      const variation = 0.97 + (seed / 2147483647) * 0.06;
 
       let rgb;
       if (typeof tint === "number" && tint <= 2) {

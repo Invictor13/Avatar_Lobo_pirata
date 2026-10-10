@@ -117,7 +117,7 @@
       }
     }
 
-    head.scale[1] = headScaleY * (1 + Math.sin(seconds * 2.1) * 0.006);
+    head.scale[1] = headScaleY;
 
     if (seconds >= nextBlinkAt && blinkStartedAt < 0) blinkStartedAt = seconds;
     let blink = 0;

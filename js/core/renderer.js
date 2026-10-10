@@ -40,12 +40,6 @@
       vLocalPos = aPosition;
       vec3 pos = aPosition;
 
-      // Dynamic wind wave effect on vertices
-      float windWave = sin(uTime * 3.5 + pos.x * 2.5 + pos.y * 3.0) * cos(uTime * 2.1 + pos.z * 2.0);
-      float windIntensity = smoothstep(-1.0, 1.0, pos.y) * 0.045; // stronger wind higher up on neck/fur/hat
-      pos.x += windWave * windIntensity * 0.8;
-      pos.z += windWave * windIntensity * 0.5;
-
       vec4 worldPosition = uModel * vec4(pos, 1.0);
       vPosition = worldPosition.xyz;
       vNormal = normalize(uNormalMatrix * aNormal);
@@ -86,20 +80,19 @@
       );
     }
 
-    // High resolution procedural fur bump mapping gradient
+    // Procedural fur bump mapping gradient
     vec3 getFurBumpNormal(vec3 worldPos, vec3 baseNormal) {
-      vec3 p = worldPos * 45.0; // Dense micro-fur fibers
+      vec3 p = worldPos * 35.0; // Dense micro-fur fibers
       float e = 0.02;
       float n = noise(p);
       float nx = noise(p + vec3(e, 0.0, 0.0)) - n;
       float ny = noise(p + vec3(0.0, e, 0.0)) - n;
       float nz = noise(p + vec3(0.0, 0.0, e)) - n;
 
-      // Secondary directional fur strands
-      vec3 pStrands = worldPos * vec3(12.0, 60.0, 12.0) + vec3(0.0, uTime * 0.4, 0.0);
-      float strandNoise = noise(pStrands) * 0.5;
+      vec3 pStrands = worldPos * vec3(12.0, 30.0, 12.0);
+      float strandNoise = noise(pStrands) * 0.3;
 
-      vec3 bumpGrad = vec3(nx, ny, nz) / e * 0.12 + vec3(strandNoise * 0.08);
+      vec3 bumpGrad = vec3(nx, ny, nz) / e * 0.06 + vec3(strandNoise * 0.04);
       return normalize(baseNormal - bumpGrad);
     }
 
@@ -115,11 +108,13 @@
         normal = getFurBumpNormal(vPosition, normal);
       }
 
+      // Soft Ambient Occlusion for deep lower neck & inner cavities
+      float softAO = mix(0.78, 1.0, smoothstep(-1.0, 0.4, vLocalPos.y));
+
       // Natural Warm & Dynamic Studio Lighting System
-      vec3 keyLightDir = normalize(vec3(0.35, 0.85, 0.75));
-      vec3 fillLightDir = normalize(vec3(-0.65, 0.25, 0.5));
-      vec3 rimLightDir = normalize(vec3(0.0, -0.4, -0.9));
-      vec3 warmRimDir = normalize(vec3(0.7, -0.3, -0.65));
+      vec3 keyLightDir = normalize(vec3(0.3, 0.7, 0.8));
+      vec3 fillLightDir = normalize(vec3(-0.5, 0.3, 0.6));
+      vec3 warmRimDir = normalize(vec3(0.6, -0.2, -0.6));
 
       float diffuseKey = max(dot(normal, keyLightDir), 0.0);
       float diffuseFill = max(dot(normal, fillLightDir), 0.0);
@@ -127,51 +122,26 @@
       vec3 viewDirection = normalize(uCamera - vPosition);
       vec3 halfVector = normalize(keyLightDir + viewDirection);
 
-      // Specular highlight calculation - ELIMINATE metallic glare on fur!
-      float specPower = mix(16.0, 128.0, 1.0 - uRoughness);
+      // Specular highlight calculation
+      float specPower = mix(16.0, 64.0, 1.0 - uRoughness);
       float spec = pow(max(dot(normal, halfVector), 0.0), specPower);
       if (isMatteFur) {
-        spec *= 0.03; // Almost zero specular glare for soft, organic fur
+        spec *= 0.04; // Soft specular sheen on fur
       }
 
       // Procedural Fur Strand Micro-variation
-      float furDetail = noise(vPosition * 35.0) * 0.14 - 0.07;
+      float furDetail = noise(vPosition * 25.0) * 0.05 - 0.025;
       vec3 baseColor = uColor * vColor * (1.0 + furDetail);
 
-      // Deep Cavity Ambient Occlusion (Inner ears, lower neck, under muzzle, under jaw)
-      float depthAO = smoothstep(-1.2, 0.8, vLocalPos.z);
-      // Extra AO drop for lower parts under head and inside mouth/snout cavity
-      if (vLocalPos.y < 0.2) {
-        depthAO *= mix(0.55, 1.0, smoothstep(-0.8, 0.2, vLocalPos.y));
-      }
-      depthAO = mix(0.40, 1.0, depthAO);
-
-      // --- CAST SHADOW APPROXIMATIONS ---
-      // 1. Hat Brim Cast Shadow on Forehead, Eyes, and Upper Face
-      float hatShadow = 1.0;
-      if (vLocalPos.y < 0.82 && vLocalPos.z > -0.2) {
-        // Shadow strength increases closer below the hat brim (around y = 0.85)
-        float hatProximity = smoothstep(0.15, 0.82, vLocalPos.y);
-        hatShadow = mix(0.48, 1.0, hatProximity);
-      }
-
-      // 2. Muzzle Cast Shadow over Jaw & Throat
-      float muzzleShadow = 1.0;
-      if (vLocalPos.y < -0.35 && vLocalPos.z < 0.8) {
-        muzzleShadow = mix(0.55, 1.0, smoothstep(-0.9, -0.35, vLocalPos.y));
-      }
-
-      float totalShadow = hatShadow * muzzleShadow * depthAO;
-
-      // Subtle Rim Lighting (Soft contour outline)
+      // Soft Rim Lighting
       float rimKey = pow(1.0 - max(dot(normal, viewDirection), 0.0), 3.0);
-      vec3 rimColor = vec3(0.95, 0.5, 0.12) * rimKey * (isMatteFur ? 0.35 : 0.75);
-      vec3 warmRim = vec3(0.85, 0.3, 0.05) * pow(max(dot(normal, warmRimDir), 0.0), 3.5) * 0.4;
+      vec3 rimColor = vec3(0.95, 0.55, 0.2) * rimKey * (isMatteFur ? 0.25 : 0.6);
+      vec3 warmRim = vec3(0.85, 0.35, 0.1) * pow(max(dot(normal, warmRimDir), 0.0), 3.5) * 0.3;
 
-      // Ambient, Diffuse, Specular & Shadow Composite
-      vec3 ambient = baseColor * 0.35 * totalShadow;
-      vec3 diffuseComposite = baseColor * (diffuseKey * 0.75 + diffuseFill * 0.25) * totalShadow;
-      vec3 specularComposite = vec3(1.0, 0.85, 0.5) * spec * (1.0 - uRoughness);
+      // Composite lighting: Ambient + Key + Fill + Specular + Rim
+      vec3 ambient = baseColor * 0.45 * softAO;
+      vec3 diffuseComposite = baseColor * (diffuseKey * 0.65 + diffuseFill * 0.35) * softAO;
+      vec3 specularComposite = vec3(1.0, 0.9, 0.7) * spec * (1.0 - uRoughness);
 
       vec3 finalColor = ambient + diffuseComposite + specularComposite + rimColor + warmRim;
 
