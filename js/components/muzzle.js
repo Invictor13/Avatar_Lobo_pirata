@@ -25,12 +25,6 @@
     for (const s of [-1, 1]) {
       const x = (v) => s * v;
       muzzleGroup.mesh(geometry.ellipsoid(x(0.245), -0.51, 1.05, 0.22, 0.16, 0.18, 8, 5, [0xfff0e0, 0xf5e6d3, 0xe5d0b8, 0xfff8ee]), [1, 1, 1], 0.75);
-      const padTris = [
-        [[x(0.09), -0.44, 1.19], [x(0.28), -0.43, 1.19], [x(0.30), -0.55, 1.20]],
-        [[x(0.28), -0.43, 1.19], [x(0.43), -0.53, 1.11], [x(0.30), -0.55, 1.20]],
-        [[x(0.30), -0.55, 1.20], [x(0.43), -0.53, 1.11], [x(0.23), -0.65, 1.20]]
-      ];
-      muzzleGroup.mesh(geometry.surfaceTriangles(padTris, [0xf5e6d3, 0xfff0e0, 0xe5d0b8]), [1, 1, 1], 0.75);
     }
 
     // Upper Canines & Teeth embedded under upper lip
