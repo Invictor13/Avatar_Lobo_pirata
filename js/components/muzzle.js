@@ -3,8 +3,10 @@
 
   const { node, geometry, colors } = window.LoboPirata;
 
-  const snoutPalette = [0xe64b12, 0xf45f17, 0xff8421, 0xc63a12, 0xffa03a, 0x9a2b16, 0xdd4212];
+  const snoutPalette = [0xd83f0e, 0xeb5314, 0xff7c1a, 0xba300e, 0xff962f, 0x8e2311, 0xd0380e];
   const nosePalette = [0x111319, 0x24232a, 0x353038, 0x090c12, 0x4a3026];
+  const jawFurPalette = [0xd83f0e, 0xc2340b, 0x9e2407, 0x7a1804];
+  const whiteFurPalette = [0xffffff, 0xffffff, 0xf5f5f5, 0xe0e0e0];
 
   window.LoboPirata.parts.muzzle = (root) => {
     const muzzleGroup = root.add(node("projecting-muzzle"));
@@ -31,6 +33,15 @@
       muzzleGroup.mesh(geometry.surfaceTriangles(padTris, [0xf5e6d3, 0xfff0e0, 0xe5d0b8]), [1, 1, 1], 0.75);
     }
 
+    // Upper Canines & Teeth embedded under upper lip
+    for (const s of [-1, 1]) {
+      const tooth = muzzleGroup.add(node("upper-canine", [s * 0.14, -0.62, 1.28]));
+      tooth.rotation[0] = Math.PI; // Point down
+      tooth.rotation[2] = -s * 0.15;
+      tooth.scale = [0.035, 0.07, 0.032];
+      tooth.mesh(geometry.cone(5, 0.01, 0.5), colors.white, 0.4);
+    }
+
     // Black nose tip and nostrils projecting naturally forward
     muzzleGroup.mesh(geometry.ellipsoid(0, -0.61, 1.445, 0.255, 0.155, 0.16, 9, 5, nosePalette), [1, 1, 1], 0.35);
 
@@ -50,25 +61,43 @@
     const mouthCavity = mouth.add(node("mouth-opening", [0, 0, 0]));
     mouthCavity.mesh(geometry.extrudedPolygon([[-0.19, -0.78], [-0.11, -0.81], [0, -0.79], [0.11, -0.81], [0.19, -0.78], [0.12, -0.86], [0, -0.89], [-0.12, -0.86]], 1.02, 0.055, [0x1a1217, 0x2e1b1d, 0x080a10]), [1, 1, 1], 0.9);
 
-    // Jaw node positioned at jaw joint (y = -0.65, z = 0.75)
-    const jaw = mouth.add(node("moving-lower-jaw", [0, -0.65, 0.75]));
+    // Jaw node positioned at jaw joint hinge (pivot y = -0.55, z = 0.50)
+    const jaw = mouth.add(node("moving-lower-jaw", [0, -0.55, 0.50]));
 
-    const jawVolume = jaw.add(node("jaw-volume", [0, 0, 0]));
-    jawVolume.mesh(geometry.ellipsoid(0, -0.07, 0.10, 0.22, 0.12, 0.25, 8, 5, [0x292127, 0x40241f, 0x5c2b20]), [1, 1, 1], 0.85);
+    // ANATOMICAL LOWER WOLF JAW STRUCTURE (No spheres/balls!)
+    // Lower jaw bone mandible extending along Z axis
+    const jawBone = jaw.add(node("jaw-mandible-bone", [0, -0.15, 0.45]));
 
-    const chin = jaw.add(node("chin-facet", [0, 0, 0]));
-    chin.mesh(geometry.ellipsoid(0, -0.15, 0.20, 0.18, 0.07, 0.15, 7, 4, [0x1d1920, 0x40241f]), [1, 1, 1], 0.88);
+    // Extruded polygon forming real elongated lower jaw shape with chin tip
+    const jawShapePoly = [
+      [-0.20, -0.05], [-0.22, 0.35], [-0.15, 0.65], [0.0, 0.72],
+      [0.15, 0.65], [0.22, 0.35], [0.20, -0.05]
+    ];
+    jawBone.mesh(geometry.extrudedPolygon(jawShapePoly, -0.18, 0.16, jawFurPalette), [1, 1, 1], 0.85);
 
-    // Lower canines
+    // Chin tip fur accent (white chin beard patch)
+    const chinBeardPoly = [
+      [-0.14, 0.42], [-0.12, 0.68], [0.0, 0.76], [0.12, 0.68], [0.14, 0.42]
+    ];
+    jawBone.mesh(geometry.extrudedPolygon(chinBeardPoly, -0.02, 0.12, whiteFurPalette), [1, 1, 1], 0.78);
+
+    // Lower canines & front teeth array
     for (const side of [-1, 1]) {
-      const tooth = jaw.add(node("lower-canine", [side * 0.11, -0.05, 0.23]));
-      tooth.rotation[2] = side * 0.15;
-      tooth.scale = [0.032, 0.06, 0.03];
-      tooth.mesh(geometry.cone(5, 0.01, 0.5), colors.white, 0.5);
+      const tooth = jawBone.add(node("lower-canine", [side * 0.12, -0.01, 0.62]));
+      tooth.rotation[2] = side * 0.12;
+      tooth.scale = [0.032, 0.065, 0.03];
+      tooth.mesh(geometry.cone(5, 0.01, 0.5), colors.white, 0.4);
+    }
+    // Front incisors
+    for (const incisorX of [-0.06, -0.02, 0.02, 0.06]) {
+      const tooth = jawBone.add(node("lower-incisor", [incisorX, -0.01, 0.66]));
+      tooth.scale = [0.018, 0.038, 0.018];
+      tooth.mesh(geometry.cone(4, 0.01, 0.5), colors.white, 0.4);
     }
 
-    const tongue = jaw.add(node("tongue", [0, -0.05, 0.15]));
-    tongue.mesh(geometry.ellipsoid(0, 0, 0, 0.09, 0.02, 0.08, 6, 4, [0x781409, 0xa31e13]), [1, 1, 1], 0.6);
+    // Tongue resting inside lower jaw
+    const tongue = jawBone.add(node("tongue", [0, -0.02, 0.35]));
+    tongue.mesh(geometry.ellipsoid(0, 0, 0, 0.09, 0.02, 0.22, 8, 4, [0x8b180d, 0xaa2013, 0x6e1008]), [1, 1, 1], 0.6);
 
     return { muzzle: muzzleGroup, mouth, mouthCavity, jaw, tongue };
   };

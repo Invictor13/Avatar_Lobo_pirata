@@ -109,17 +109,17 @@
         return;
       }
 
-      // Procedural fur bump normal
       vec3 normal = normalize(vNormal);
-      if (uRoughness > 0.5) { // Apply fur bump map to matte/rough fur surfaces
+      bool isMatteFur = uRoughness > 0.4;
+      if (isMatteFur) { // Apply fur bump map to matte/rough fur surfaces
         normal = getFurBumpNormal(vPosition, normal);
       }
 
-      // Dynamic 3-Point Studio Lighting System
-      vec3 keyLightDir = normalize(vec3(0.4, 0.8, 0.9));
-      vec3 fillLightDir = normalize(vec3(-0.7, 0.2, 0.6));
-      vec3 rimLightDir = normalize(vec3(0.0, -0.5, -0.9)); // Backlight / Rim
-      vec3 warmRimDir = normalize(vec3(0.8, -0.2, -0.7));
+      // Natural Warm & Dynamic Studio Lighting System
+      vec3 keyLightDir = normalize(vec3(0.35, 0.85, 0.75));
+      vec3 fillLightDir = normalize(vec3(-0.65, 0.25, 0.5));
+      vec3 rimLightDir = normalize(vec3(0.0, -0.4, -0.9));
+      vec3 warmRimDir = normalize(vec3(0.7, -0.3, -0.65));
 
       float diffuseKey = max(dot(normal, keyLightDir), 0.0);
       float diffuseFill = max(dot(normal, fillLightDir), 0.0);
@@ -127,27 +127,51 @@
       vec3 viewDirection = normalize(uCamera - vPosition);
       vec3 halfVector = normalize(keyLightDir + viewDirection);
 
-      // Specular highlight calculation
+      // Specular highlight calculation - ELIMINATE metallic glare on fur!
       float specPower = mix(16.0, 128.0, 1.0 - uRoughness);
       float spec = pow(max(dot(normal, halfVector), 0.0), specPower);
+      if (isMatteFur) {
+        spec *= 0.03; // Almost zero specular glare for soft, organic fur
+      }
 
       // Procedural Fur Strand Micro-variation
       float furDetail = noise(vPosition * 35.0) * 0.14 - 0.07;
       vec3 baseColor = uColor * vColor * (1.0 + furDetail);
 
-      // Ambient Occlusion shadow approximation for depth in cavities
+      // Deep Cavity Ambient Occlusion (Inner ears, lower neck, under muzzle, under jaw)
       float depthAO = smoothstep(-1.2, 0.8, vLocalPos.z);
-      depthAO = mix(0.55, 1.0, depthAO);
+      // Extra AO drop for lower parts under head and inside mouth/snout cavity
+      if (vLocalPos.y < 0.2) {
+        depthAO *= mix(0.55, 1.0, smoothstep(-0.8, 0.2, vLocalPos.y));
+      }
+      depthAO = mix(0.40, 1.0, depthAO);
 
-      // Dramatic Rim Lighting
-      float rimKey = pow(1.0 - max(dot(normal, viewDirection), 0.0), 2.5);
-      vec3 rimColor = vec3(1.0, 0.55, 0.1) * rimKey * 0.75;
-      vec3 warmRim = vec3(0.9, 0.35, 0.05) * pow(max(dot(normal, warmRimDir), 0.0), 3.0) * 0.6;
+      // --- CAST SHADOW APPROXIMATIONS ---
+      // 1. Hat Brim Cast Shadow on Forehead, Eyes, and Upper Face
+      float hatShadow = 1.0;
+      if (vLocalPos.y < 0.82 && vLocalPos.z > -0.2) {
+        // Shadow strength increases closer below the hat brim (around y = 0.85)
+        float hatProximity = smoothstep(0.15, 0.82, vLocalPos.y);
+        hatShadow = mix(0.48, 1.0, hatProximity);
+      }
 
-      // Key, Fill, Specular & Ambient Composite
-      vec3 ambient = baseColor * 0.30 * depthAO;
-      vec3 diffuseComposite = baseColor * (diffuseKey * 0.75 + diffuseFill * 0.25) * depthAO;
-      vec3 specularComposite = vec3(1.0, 0.82, 0.4) * spec * (1.0 - uRoughness) * 1.2;
+      // 2. Muzzle Cast Shadow over Jaw & Throat
+      float muzzleShadow = 1.0;
+      if (vLocalPos.y < -0.35 && vLocalPos.z < 0.8) {
+        muzzleShadow = mix(0.55, 1.0, smoothstep(-0.9, -0.35, vLocalPos.y));
+      }
+
+      float totalShadow = hatShadow * muzzleShadow * depthAO;
+
+      // Subtle Rim Lighting (Soft contour outline)
+      float rimKey = pow(1.0 - max(dot(normal, viewDirection), 0.0), 3.0);
+      vec3 rimColor = vec3(0.95, 0.5, 0.12) * rimKey * (isMatteFur ? 0.35 : 0.75);
+      vec3 warmRim = vec3(0.85, 0.3, 0.05) * pow(max(dot(normal, warmRimDir), 0.0), 3.5) * 0.4;
+
+      // Ambient, Diffuse, Specular & Shadow Composite
+      vec3 ambient = baseColor * 0.35 * totalShadow;
+      vec3 diffuseComposite = baseColor * (diffuseKey * 0.75 + diffuseFill * 0.25) * totalShadow;
+      vec3 specularComposite = vec3(1.0, 0.85, 0.5) * spec * (1.0 - uRoughness);
 
       vec3 finalColor = ambient + diffuseComposite + specularComposite + rimColor + warmRim;
 
