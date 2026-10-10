@@ -211,7 +211,7 @@
       ears.children[1].rotation[2] = 0.05 - Math.sin(seconds * 1.7) * 0.015;
     }
 
-    view.render();
+    view.render(seconds);
     window.requestAnimationFrame(animate);
   };
   window.requestAnimationFrame(animate);
