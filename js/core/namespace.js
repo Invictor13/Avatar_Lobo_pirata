@@ -40,15 +40,12 @@
     const positions = [];
     const normals = [];
     const colors = [];
-    let seed = 17;
     for (const face of faces) {
       const [a, b, c, tint = 1] = face;
       const normal = normalize(cross(
         [b[0] - a[0], b[1] - a[1], b[2] - a[2]],
         [c[0] - a[0], c[1] - a[1], c[2] - a[2]],
       ));
-      seed = (seed * 16807) % 2147483647;
-      const variation = 0.97 + (seed / 2147483647) * 0.06;
 
       let rgb;
       if (typeof tint === "number" && tint <= 2) {
@@ -61,9 +58,9 @@
         positions.push(...vertex);
         normals.push(...normal);
         colors.push(
-          Math.min(1, Math.max(0, rgb[0] * variation)),
-          Math.min(1, Math.max(0, rgb[1] * variation)),
-          Math.min(1, Math.max(0, rgb[2] * variation))
+          Math.min(1, Math.max(0, rgb[0])),
+          Math.min(1, Math.max(0, rgb[1])),
+          Math.min(1, Math.max(0, rgb[2]))
         );
       }
     }
@@ -99,6 +96,25 @@
     return triangles(faces);
   }
 
+  function getPaletteColorSmooth(palette, normY) {
+    if (!palette) return [1, 1, 1];
+    if (!Array.isArray(palette)) return parseColor(palette);
+    if (palette.length === 0) return [1, 1, 1];
+    if (palette.length === 1) return parseColor(palette[0]);
+    // Smooth interpolation across palette based on normalized spatial factor (0..1)
+    const t = Math.min(1, Math.max(0, normY)) * (palette.length - 1);
+    const idx0 = Math.floor(t);
+    const idx1 = Math.min(palette.length - 1, idx0 + 1);
+    const frac = t - idx0;
+    const c0 = parseColor(palette[idx0]);
+    const c1 = parseColor(palette[idx1]);
+    return [
+      c0[0] + (c1[0] - c0[0]) * frac,
+      c0[1] + (c1[1] - c0[1]) * frac,
+      c0[2] + (c1[2] - c0[2]) * frac,
+    ];
+  }
+
   function ellipsoid(cx, cy, cz, rx, ry, rz, segments = 10, rings = 6, palette = null, deformation = null) {
     const grid = [];
     for (let j = 0; j <= rings; j++) {
@@ -114,12 +130,13 @@
       grid.push(row);
     }
     const faces = [];
-    let count = 0;
     for (let j = 0; j < rings; j++) {
+      const normY = j / rings;
+      const faceColor = getPaletteColorSmooth(palette, normY);
       for (let i = 0; i < segments; i++) {
         const a = grid[j][i], b = grid[j][i + 1], c = grid[j + 1][i], d = grid[j + 1][i + 1];
-        faces.push([a, c, b, pickColor(palette, count++)]);
-        faces.push([b, c, d, pickColor(palette, count++)]);
+        faces.push([a, c, b, faceColor]);
+        faces.push([b, c, d, faceColor]);
       }
     }
     return triangles(faces);
@@ -142,22 +159,24 @@
       })
     );
     const faces = [];
-    let count = 0;
     for (let j = 0; j < grid.length - 1; j++) {
+      const normZ = j / (grid.length - 1);
+      const faceColor = getPaletteColorSmooth(palette, normZ);
       for (let i = 0; i < segments; i++) {
         const a = grid[j][i];
         const b = grid[j][(i + 1) % segments];
         const c = grid[j + 1][i];
         const d = grid[j + 1][(i + 1) % segments];
-        faces.push([a, c, b, pickColor(palette, count++)]);
-        faces.push([b, c, d, pickColor(palette, count++)]);
+        faces.push([a, c, b, faceColor]);
+        faces.push([b, c, d, faceColor]);
       }
     }
     const lastSec = sections[sections.length - 1];
     const tip = [0, lastSec.y, lastSec.z + 0.025];
     const lastGrid = grid[grid.length - 1];
+    const tipColor = getPaletteColorSmooth(palette, 1.0);
     for (let i = 0; i < segments; i++) {
-      faces.push([lastGrid[i], tip, lastGrid[(i + 1) % segments], pickColor(palette, count++)]);
+      faces.push([lastGrid[i], tip, lastGrid[(i + 1) % segments], tipColor]);
     }
     return triangles(faces);
   }
