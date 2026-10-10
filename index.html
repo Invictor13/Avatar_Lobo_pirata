@@ -4,35 +4,289 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#090b12">
-  <title>Lobo-guará pirata · modelo 3D</title>
-  <link rel="stylesheet" href="styles/main.css?v=20261009-1047">
+  <title>Lobo-guará pirata · Terminal do Mercado</title>
+  <link rel="stylesheet" href="styles/main.css?v=20261010-01">
 </head>
 <body>
-  <main class="stage">
-    <canvas id="portrait" aria-label="Modelo 3D interativo de um lobo-guará pirata">
-      Seu navegador não oferece suporte ao WebGL necessário para exibir este modelo 3D.
-    </canvas>
+  <!-- ELEGANT & ANIMATED HEADER -->
+  <header class="app-header">
+    <div class="header-left">
+      <!-- Animated Back Button (visible in sub-modes / views) -->
+      <button id="btn-header-back" class="btn-header-back hidden" aria-label="Voltar para a visão principal">
+        <span class="back-icon">←</span>
+        <span class="back-text">Voltar</span>
+      </button>
 
-    <div class="control-panel">
-      <button id="btn-talk" class="btn-pirate">💬 Falar Frase</button>
-      <button id="btn-spin" class="btn-pirate">🔄 Giro 360°</button>
-      <input id="input-speech" type="text" class="input-pirate" placeholder="Digite uma frase pirata..." />
-      <button id="btn-speak-custom" class="btn-pirate">🗣️ Falar</button>
+      <!-- Main Logo & Live Market Status -->
+      <div class="header-brand">
+        <div class="brand-title">
+          <span class="brand-badge-icon">🐺</span>
+          <span class="brand-name">TERMINAL MERCADO</span>
+        </div>
+        <div class="market-status-badge">
+          <span class="pulse-dot"></span>
+          <span class="status-label">PREGÃO REGULAR</span>
+        </div>
+      </div>
     </div>
 
-    <p id="status" class="status" role="status" hidden></p>
-  </main>
-  <script src="js/core/namespace.js?v=20261009-1047"></script>
-  <script src="js/core/renderer.js?v=20261009-1047"></script>
-  <script src="js/components/ears.js?v=20261009-1047"></script>
-  <script src="js/components/hat.js?v=20261009-1047"></script>
-  <script src="js/components/face.js?v=20261009-1047"></script>
-  <script src="js/components/fur.js?v=20261009-1047"></script>
-  <script src="js/components/eyes.js?v=20261009-1047"></script>
-  <script src="js/components/muzzle.js?v=20261009-1047"></script>
-  <script src="js/components/head.js?v=20261009-1047"></script>
-  <script src="js/components/accessories.js?v=20261009-1047"></script>
-  <script src="js/components/speech.js?v=20261009-1047"></script>
-  <script src="js/index.js?v=20261009-1047"></script>
+    <div class="header-center">
+      <!-- Animated Market Tickers & Market Trend Indicators -->
+      <div class="market-ticker-container">
+        <div class="ticker-item trend-up" title="Ibovespa +0,85%">
+          <span class="ticker-symbol">IBOV</span>
+          <span class="ticker-val">128.450 pts</span>
+          <span class="ticker-change">▲ +0,85%</span>
+        </div>
+        <div class="ticker-divider">|</div>
+        <div class="ticker-item trend-down" title="S&P 500 -0,12%">
+          <span class="ticker-symbol">S&P 500</span>
+          <span class="ticker-val">5.620</span>
+          <span class="ticker-change">▼ -0,12%</span>
+        </div>
+        <div class="ticker-divider">|</div>
+        <div class="ticker-item trend-up" title="Bitcoin +1,42%">
+          <span class="ticker-symbol">BTC</span>
+          <span class="ticker-val">US$ 64.250</span>
+          <span class="ticker-change">▲ +1,42%</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="header-right">
+      <!-- Live Session Countdown & Clock -->
+      <div class="market-clock-widget">
+        <span class="clock-icon">⏱️</span>
+        <span class="clock-label">FECHA EM</span>
+        <span id="session-countdown" class="clock-time">02h 45m</span>
+        <span class="clock-divider">|</span>
+        <span id="realtime-clock" class="clock-realtime">--:--:--</span>
+      </div>
+
+      <!-- Action Icons -->
+      <div class="header-actions">
+        <button id="btn-toggle-privacy" class="header-action-btn" title="Ocultar/Exibir valores" aria-label="Toggle privacidade">
+          <span class="action-icon">👁️</span>
+        </button>
+        <button id="btn-toggle-fullscreen" class="header-action-btn" title="Alternar Tela Cheia" aria-label="Tela Cheia">
+          <span class="action-icon">⛶</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- DASHBOARD MAIN CONTENT GRID (NO REDUNDANT STRIPS OR BOTÕES DE VOLTAR SOLTOS) -->
+  <div class="app-dashboard">
+    <!-- LEFT COLUMN: COMMODITIES & MARKET METRICS -->
+    <aside class="dash-panel panel-left">
+      <div class="panel-card">
+        <div class="card-header-tabs">
+          <button class="card-tab active" data-tab="commodities">Commodities</button>
+          <button class="card-tab" data-tab="destaques">Destaques</button>
+          <button class="card-tab" data-tab="indices">Índices</button>
+        </div>
+
+        <div class="card-section-title">
+          <span>COMMODITIES & CÂMBIO</span>
+          <span class="sub-tag">B3 / B3-RT</span>
+        </div>
+
+        <div class="asset-list">
+          <div class="asset-item clickable-mode" data-mode-title="Detalhamento - Petróleo Brent">
+            <span class="asset-name">PETRÓLEO BRENT</span>
+            <span class="asset-price">$78,40</span>
+            <span class="asset-badge badge-up">▲ +0.81%</span>
+          </div>
+          <div class="asset-item clickable-mode" data-mode-title="Detalhamento - Minério de Ferro">
+            <span class="asset-name">MINÉRIO DE FERRO</span>
+            <span class="asset-price">$108,20</span>
+            <span class="asset-badge badge-down">▼ -0.31%</span>
+          </div>
+          <div class="asset-item clickable-mode" data-mode-title="Detalhamento - Bitcoin">
+            <span class="asset-name">BITCOIN</span>
+            <span class="asset-price">$64.250</span>
+            <span class="asset-badge badge-up">▲ +1.42%</span>
+          </div>
+          <div class="asset-item clickable-mode" data-mode-title="Detalhamento - Euro">
+            <span class="asset-name">EURO</span>
+            <span class="asset-price">R$ 5,92</span>
+            <span class="asset-badge badge-down">▼ -0.20%</span>
+          </div>
+        </div>
+
+        <div class="amplitude-section">
+          <div class="amplitude-header">
+            <span>AMPLITUDE B3</span>
+            <span class="amp-stats">45 Altas | 5 Neutras | 50 Baixas</span>
+          </div>
+          <div class="sectors-grid">
+            <div class="sector-chip">
+              <span class="sec-name">Commercial Services</span>
+              <span class="sec-val val-up">+4.37%</span>
+            </div>
+            <div class="sector-chip">
+              <span class="sec-name">Saúde</span>
+              <span class="sec-val val-up">+1.39%</span>
+            </div>
+            <div class="sector-chip">
+              <span class="sec-name">Consumo</span>
+              <span class="sec-val val-up">+1.35%</span>
+            </div>
+            <div class="sector-chip">
+              <span class="sec-name">Tecnologia</span>
+              <span class="sec-val val-up">+0.92%</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- CENTER COLUMN: 3D MODEL STAGE & CONSOLIDATED PORTFOLIO CARD -->
+    <main class="dash-panel panel-center">
+      <div class="stage-3d-wrapper">
+        <canvas id="portrait" aria-label="Modelo 3D interativo de um lobo-guará pirata">
+          Seu navegador não oferece suporte ao WebGL necessário para exibir este modelo 3D.
+        </canvas>
+
+        <div class="control-panel">
+          <button id="btn-talk" class="btn-pirate">💬 Falar Frase</button>
+          <button id="btn-spin" class="btn-pirate">🔄 Giro 360°</button>
+          <input id="input-speech" type="text" class="input-pirate" placeholder="Digite uma frase pirata..." />
+          <button id="btn-speak-custom" class="btn-pirate">🗣️ Falar</button>
+        </div>
+      </div>
+
+      <div class="portfolio-card">
+        <div class="port-top-row">
+          <div class="port-title-group">
+            <span class="status-dot"></span>
+            <span class="port-label">PATRIMÔNIO CONSOLIDADO</span>
+            <button id="btn-hide-val" class="icon-btn-inline" title="Ocultar valor">👁️</button>
+          </div>
+          <div class="port-filter-pills">
+            <button class="pill active">Performance</button>
+            <button class="pill">Alocação</button>
+            <button class="pill">Proventos</button>
+          </div>
+        </div>
+
+        <div class="port-main-value">
+          <span class="val-currency">R$</span>
+          <span class="val-amount" data-real-val="168,38">168,38</span>
+          <span class="val-badge badge-neutral">0,00%</span>
+        </div>
+
+        <div class="port-bottom-stats">
+          <div class="stat-group">
+            <span class="stat-lbl">HOJE</span>
+            <span class="stat-val val-up">+R$ 0,00 (0,00%)</span>
+          </div>
+          <div class="stat-group">
+            <span class="stat-lbl">MÊS</span>
+            <span class="stat-val">--</span>
+          </div>
+          <div class="stat-group right-align">
+            <span class="stat-lbl">CDI <strong class="val-up">+0,04%</strong> • IBOV</span>
+            <span class="stat-val val-up">ALFA +0,62%</span>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- RIGHT COLUMN: INTELLIGENCE FEED & ASSETS -->
+    <aside class="dash-panel panel-right">
+      <div class="panel-card">
+        <div class="feed-header-title">
+          <span>FEED DE INTELIGÊNCIA</span>
+          <span class="live-pill">AO VIVO</span>
+        </div>
+
+        <div class="card-header-tabs margin-top">
+          <button class="card-tab active" data-tab="meus-ativos">Meus Ativos</button>
+          <button class="card-tab" data-tab="mercado">Mercado Geral</button>
+          <button class="card-tab" data-tab="agenda">Agenda Proventos</button>
+        </div>
+
+        <div class="feed-list">
+          <div class="feed-item clickable-mode" data-mode-title="Detalhamento - MXRF11 Provento Conf.">
+            <div class="feed-item-top">
+              <span class="asset-ticker">MXRF11</span>
+              <span class="feed-tag tag-success">PROVENTO CONFIRMADO</span>
+              <span class="feed-time">há 25 min</span>
+            </div>
+            <div class="feed-item-body">
+              <strong>Dividendos de R$ 1,50 provisionado.</strong>
+              <div class="feed-dates">Data-Com: N/D • Pgto: 14/09/2026</div>
+            </div>
+          </div>
+
+          <div class="feed-item clickable-mode" data-mode-title="Detalhamento - MXRF11 Provento Conf.">
+            <div class="feed-item-top">
+              <span class="asset-ticker">MXRF11</span>
+              <span class="feed-tag tag-success">PROVENTO CONFIRMADO</span>
+              <span class="feed-time">há 50 min</span>
+            </div>
+            <div class="feed-item-body">
+              <strong>Dividendos de R$ 1,50 provisionado.</strong>
+              <div class="feed-dates">Data-Com: N/D • Pgto: 13/08/2026</div>
+            </div>
+          </div>
+
+          <div class="feed-item clickable-mode" data-mode-title="Detalhamento - MXRF11 Provento Conf.">
+            <div class="feed-item-top">
+              <span class="asset-ticker">MXRF11</span>
+              <span class="feed-tag tag-success">PROVENTO CONFIRMADO</span>
+              <span class="feed-time">há 1h</span>
+            </div>
+            <div class="feed-item-body">
+              <strong>Dividendos de R$ 1,50 provisionado.</strong>
+              <div class="feed-dates">Data-Com: N/D • Pgto: 13/07/2026</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </aside>
+  </div>
+
+  <!-- SUB-MODE VIEW OVERLAY / CONTAINER -->
+  <div id="submode-overlay" class="submode-container hidden">
+    <div class="submode-content">
+      <h2 id="submode-title" class="submode-heading">Detalhamento do Ativo</h2>
+      <p class="submode-desc">Visão aprofundada de indicadores, gráficos históricos e notícias em tempo real.</p>
+
+      <div class="submode-grid">
+        <div class="submode-card">
+          <h4>Variação de Preço (24h)</h4>
+          <div class="chart-placeholder">
+            <div class="line-graph-simulated"></div>
+          </div>
+        </div>
+        <div class="submode-card">
+          <h4>Estatísticas Principais</h4>
+          <ul class="stats-list">
+            <li><span>Máxima (52 sem):</span> <strong>R$ 82,10</strong></li>
+            <li><span>Mínima (52 sem):</span> <strong>R$ 68,50</strong></li>
+            <li><span>Volume (24h):</span> <strong>R$ 14,2M</strong></li>
+            <li><span>DY 12M:</span> <strong>12,4%</strong></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <p id="status" class="status" role="status" hidden></p>
+
+  <script src="js/core/namespace.js?v=20261010-01"></script>
+  <script src="js/core/renderer.js?v=20261010-01"></script>
+  <script src="js/components/ears.js?v=20261010-01"></script>
+  <script src="js/components/hat.js?v=20261010-01"></script>
+  <script src="js/components/face.js?v=20261010-01"></script>
+  <script src="js/components/fur.js?v=20261010-01"></script>
+  <script src="js/components/eyes.js?v=20261010-01"></script>
+  <script src="js/components/muzzle.js?v=20261010-01"></script>
+  <script src="js/components/head.js?v=20261010-01"></script>
+  <script src="js/components/accessories.js?v=20261010-01"></script>
+  <script src="js/components/speech.js?v=20261010-01"></script>
+  <script src="js/index.js?v=20261010-01"></script>
 </body>
 </html>

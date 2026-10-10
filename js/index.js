@@ -5,6 +5,88 @@
   const canvas = document.getElementById("portrait");
   const status = document.getElementById("status");
 
+  // Elements for Realtime Clock & Navigation
+  const realtimeClock = document.getElementById("realtime-clock");
+  const btnHeaderBack = document.getElementById("btn-header-back");
+  const submodeOverlay = document.getElementById("submode-overlay");
+  const submodeTitle = document.getElementById("submode-title");
+  const dashboard = document.querySelector(".app-dashboard");
+  const btnTogglePrivacy = document.getElementById("btn-toggle-privacy");
+  const btnHideVal = document.getElementById("btn-hide-val");
+  const valAmounts = document.querySelectorAll(".val-amount");
+  const btnToggleFullscreen = document.getElementById("btn-toggle-fullscreen");
+
+  // Realtime clock ticker
+  const updateClock = () => {
+    if (realtimeClock) {
+      const now = new Date();
+      realtimeClock.textContent = now.toLocaleTimeString("pt-BR");
+    }
+  };
+  setInterval(updateClock, 1000);
+  updateClock();
+
+  // Mode Switching Logic
+  let currentMode = "main"; // "main" or "submode"
+
+  const enterSubmode = (titleText) => {
+    currentMode = "submode";
+    if (submodeTitle) submodeTitle.textContent = titleText || "Detalhamento do Ativo";
+    if (submodeOverlay) submodeOverlay.classList.remove("hidden");
+    if (dashboard) dashboard.classList.add("blur-bg");
+    if (btnHeaderBack) btnHeaderBack.classList.remove("hidden");
+  };
+
+  const exitSubmode = () => {
+    currentMode = "main";
+    if (submodeOverlay) submodeOverlay.classList.add("hidden");
+    if (dashboard) dashboard.classList.remove("blur-bg");
+    if (btnHeaderBack) btnHeaderBack.classList.add("hidden");
+  };
+
+  // Wire back button
+  if (btnHeaderBack) {
+    btnHeaderBack.addEventListener("click", exitSubmode);
+  }
+
+  // Wire clickable mode elements across dashboard
+  document.querySelectorAll(".clickable-mode").forEach((item) => {
+    item.addEventListener("click", () => {
+      const modeTitle = item.getAttribute("data-mode-title");
+      enterSubmode(modeTitle);
+    });
+  });
+
+  // Privacy Toggle
+  let valuesHidden = false;
+  const toggleValuePrivacy = () => {
+    valuesHidden = !valuesHidden;
+    valAmounts.forEach((el) => {
+      if (valuesHidden) {
+        el.setAttribute("data-real-val", el.textContent);
+        el.textContent = "••••••";
+      } else {
+        const real = el.getAttribute("data-real-val");
+        if (real) el.textContent = real;
+      }
+    });
+  };
+
+  if (btnTogglePrivacy) btnTogglePrivacy.addEventListener("click", toggleValuePrivacy);
+  if (btnHideVal) btnHideVal.addEventListener("click", toggleValuePrivacy);
+
+  // Fullscreen Toggle
+  if (btnToggleFullscreen) {
+    btnToggleFullscreen.addEventListener("click", () => {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(() => {});
+      } else {
+        if (document.exitFullscreen) document.exitFullscreen().catch(() => {});
+      }
+    });
+  }
+
+  // 3D Canvas setup
   const model = node("wolf-pirate");
   const ears = parts.ears(model);
   const hat = parts.hat(model);
@@ -142,13 +224,6 @@
     if (window.LoboPirataSpeech && typeof window.LoboPirataSpeech.getSpeakingFactor === "function") {
       talking = window.LoboPirataSpeech.getSpeakingFactor(seconds);
     }
-    if (talking === 0) {
-      // Gentle idle mouth movement when not actively speaking
-      const phrasePhase = seconds % 8.0;
-      talking = phrasePhase < 1.2
-        ? Math.pow(Math.max(0, Math.sin(phrasePhase * 5.0)), 1.5) * 0.15
-        : 0;
-    }
 
     if (face.jaw) face.jaw.rotation[0] = talking * 0.28;
     if (face.mouthCavity) face.mouthCavity.scale[1] = 1.0 + talking * 0.85;
@@ -174,12 +249,10 @@
             const data = coinNode.userData;
             const currentAngle = data.baseAngle + seconds * data.speed;
 
-            // Calculate orbital position along the ring ellipse
             coinNode.position[0] = Math.cos(currentAngle) * data.radiusX;
             coinNode.position[1] = Math.sin(currentAngle) * data.radiusY;
-            coinNode.position[2] = Math.sin(currentAngle * 2) * 0.05; // Slight depth weave
+            coinNode.position[2] = Math.sin(currentAngle * 2) * 0.05;
 
-            // Spin & tilt the coin on its own axis as it travels
             coinNode.rotation[1] = currentAngle + seconds * 1.5;
             coinNode.rotation[0] = Math.sin(seconds * 2 + data.baseAngle) * 0.35;
           }
@@ -187,13 +260,12 @@
       }
     }
 
-    // Enhanced movement animation for the skull emblem on the hat
+    // Skull emblem animation
     const skullGroup = hat.children.find(c => c.name === "skull-emblem-group");
     if (skullGroup && skullGroup.userData) {
       const basePos = skullGroup.userData.basePosition;
       const baseRot = skullGroup.userData.baseRotation;
 
-      // Gentle floating bobbing and tilting synced with breathing and speaking
       const floatY = Math.sin(seconds * 2.2) * 0.015 + talking * 0.02;
       const tiltZ = Math.sin(seconds * 1.6) * 0.06 + Math.cos(seconds * 0.9) * 0.03;
       const pitchX = Math.cos(seconds * 2.0) * 0.04 + talking * 0.08;
