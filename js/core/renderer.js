@@ -11,28 +11,11 @@
     uniform mat4 uModel;
     uniform mat3 uNormalMatrix;
     uniform float uWireframe;
+    uniform float uTime;
     varying vec3 vNormal;
     varying vec3 vPosition;
     varying vec3 vColor;
-    void main() {
-      vec4 worldPosition = uModel * vec4(aPosition, 1.0);
-      vPosition = worldPosition.xyz;
-      vNormal = normalize(uNormalMatrix * aNormal);
-      vColor = aColor;
-      gl_Position = uMvp * vec4(aPosition, 1.0);
-      if (uWireframe > 0.5) gl_Position.z -= 0.001 * gl_Position.w;
-    }
-  `;
-
-  const fragmentShader = `
-    precision highp float;
-    uniform vec3 uColor;
-    uniform float uRoughness;
-    uniform float uWireframe;
-    uniform vec3 uCamera;
-    varying vec3 vNormal;
-    varying vec3 vPosition;
-    varying vec3 vColor;
+    varying vec3 vLocalPos;
 
     float hash(vec3 p) {
       p = fract(p * 0.3183099 + vec3(0.1, 0.17, 0.13));
@@ -54,27 +37,121 @@
     }
 
     void main() {
+      vLocalPos = aPosition;
+      vec3 pos = aPosition;
+
+      // Dynamic wind wave effect on vertices
+      float windWave = sin(uTime * 3.5 + pos.x * 2.5 + pos.y * 3.0) * cos(uTime * 2.1 + pos.z * 2.0);
+      float windIntensity = smoothstep(-1.0, 1.0, pos.y) * 0.045; // stronger wind higher up on neck/fur/hat
+      pos.x += windWave * windIntensity * 0.8;
+      pos.z += windWave * windIntensity * 0.5;
+
+      vec4 worldPosition = uModel * vec4(pos, 1.0);
+      vPosition = worldPosition.xyz;
+      vNormal = normalize(uNormalMatrix * aNormal);
+      vColor = aColor;
+      gl_Position = uMvp * vec4(pos, 1.0);
+      if (uWireframe > 0.5) gl_Position.z -= 0.001 * gl_Position.w;
+    }
+  `;
+
+  const fragmentShader = `
+    precision highp float;
+    uniform vec3 uColor;
+    uniform float uRoughness;
+    uniform float uWireframe;
+    uniform vec3 uCamera;
+    uniform float uTime;
+    varying vec3 vNormal;
+    varying vec3 vPosition;
+    varying vec3 vColor;
+    varying vec3 vLocalPos;
+
+    float hash(vec3 p) {
+      p = fract(p * 0.3183099 + vec3(0.1, 0.17, 0.13));
+      p *= 17.0;
+      return fract(p.x * p.y * p.z * (p.x + p.y + p.z));
+    }
+
+    float noise(vec3 p) {
+      vec3 i = floor(p);
+      vec3 f = fract(p);
+      f = f * f * (3.0 - 2.0 * f);
+      return mix(
+        mix(mix(hash(i), hash(i + vec3(1, 0, 0)), f.x),
+            mix(hash(i + vec3(0, 1, 0)), hash(i + vec3(1, 1, 0)), f.x), f.y),
+        mix(mix(hash(i + vec3(0, 0, 1)), hash(i + vec3(1, 0, 1)), f.x),
+            mix(hash(i + vec3(0, 1, 1)), hash(i + vec3(1, 1, 1)), f.x), f.y),
+        f.z
+      );
+    }
+
+    // High resolution procedural fur bump mapping gradient
+    vec3 getFurBumpNormal(vec3 worldPos, vec3 baseNormal) {
+      vec3 p = worldPos * 45.0; // Dense micro-fur fibers
+      float e = 0.02;
+      float n = noise(p);
+      float nx = noise(p + vec3(e, 0.0, 0.0)) - n;
+      float ny = noise(p + vec3(0.0, e, 0.0)) - n;
+      float nz = noise(p + vec3(0.0, 0.0, e)) - n;
+
+      // Secondary directional fur strands
+      vec3 pStrands = worldPos * vec3(12.0, 60.0, 12.0) + vec3(0.0, uTime * 0.4, 0.0);
+      float strandNoise = noise(pStrands) * 0.5;
+
+      vec3 bumpGrad = vec3(nx, ny, nz) / e * 0.12 + vec3(strandNoise * 0.08);
+      return normalize(baseNormal - bumpGrad);
+    }
+
+    void main() {
       if (uWireframe > 0.5) {
         gl_FragColor = vec4(1.0, 0.6, 0.1, 0.85);
         return;
       }
+
+      // Procedural fur bump normal
       vec3 normal = normalize(vNormal);
-      vec3 lightA = normalize(vec3(0.0, 0.6, 0.8));
-      vec3 lightB = normalize(vec3(-0.6, 0.3, 0.5));
-      vec3 lightC = normalize(vec3(0.6, -0.4, 0.5));
-      float diffuse = max(dot(normal, lightA), 0.0);
-      float fillA = max(dot(normal, lightB), 0.0);
-      float fillB = max(dot(normal, lightC), 0.0);
+      if (uRoughness > 0.5) { // Apply fur bump map to matte/rough fur surfaces
+        normal = getFurBumpNormal(vPosition, normal);
+      }
+
+      // Dynamic 3-Point Studio Lighting System
+      vec3 keyLightDir = normalize(vec3(0.4, 0.8, 0.9));
+      vec3 fillLightDir = normalize(vec3(-0.7, 0.2, 0.6));
+      vec3 rimLightDir = normalize(vec3(0.0, -0.5, -0.9)); // Backlight / Rim
+      vec3 warmRimDir = normalize(vec3(0.8, -0.2, -0.7));
+
+      float diffuseKey = max(dot(normal, keyLightDir), 0.0);
+      float diffuseFill = max(dot(normal, fillLightDir), 0.0);
+
       vec3 viewDirection = normalize(uCamera - vPosition);
-      vec3 halfVector = normalize(lightA + viewDirection);
-      float gloss = pow(max(dot(normal, halfVector), 0.0), mix(12.0, 96.0, 1.0 - uRoughness));
-      float subtleNoise = noise(vPosition * 20.0) * 0.05;
-      vec3 pigment = uColor * vColor * (0.95 + subtleNoise);
-      float rim = pow(1.0 - max(dot(normal, viewDirection), 0.0), 2.2);
-      vec3 color = pigment * (0.35 + 0.68 * diffuse + 0.18 * fillA + 0.12 * fillB);
-      color += vec3(1.0, 0.72, 0.25) * gloss * (1.0 - uRoughness) * 0.8;
-      color += vec3(1.0, 0.45, 0.05) * rim * 0.55;
-      gl_FragColor = vec4(color, 1.0);
+      vec3 halfVector = normalize(keyLightDir + viewDirection);
+
+      // Specular highlight calculation
+      float specPower = mix(16.0, 128.0, 1.0 - uRoughness);
+      float spec = pow(max(dot(normal, halfVector), 0.0), specPower);
+
+      // Procedural Fur Strand Micro-variation
+      float furDetail = noise(vPosition * 35.0) * 0.14 - 0.07;
+      vec3 baseColor = uColor * vColor * (1.0 + furDetail);
+
+      // Ambient Occlusion shadow approximation for depth in cavities
+      float depthAO = smoothstep(-1.2, 0.8, vLocalPos.z);
+      depthAO = mix(0.55, 1.0, depthAO);
+
+      // Dramatic Rim Lighting
+      float rimKey = pow(1.0 - max(dot(normal, viewDirection), 0.0), 2.5);
+      vec3 rimColor = vec3(1.0, 0.55, 0.1) * rimKey * 0.75;
+      vec3 warmRim = vec3(0.9, 0.35, 0.05) * pow(max(dot(normal, warmRimDir), 0.0), 3.0) * 0.6;
+
+      // Key, Fill, Specular & Ambient Composite
+      vec3 ambient = baseColor * 0.30 * depthAO;
+      vec3 diffuseComposite = baseColor * (diffuseKey * 0.75 + diffuseFill * 0.25) * depthAO;
+      vec3 specularComposite = vec3(1.0, 0.82, 0.4) * spec * (1.0 - uRoughness) * 1.2;
+
+      vec3 finalColor = ambient + diffuseComposite + specularComposite + rimColor + warmRim;
+
+      gl_FragColor = vec4(finalColor, 1.0);
     }
   `;
 
@@ -210,6 +287,7 @@
       roughness: gl.getUniformLocation(shaderProgram, "uRoughness"),
       wireframe: gl.getUniformLocation(shaderProgram, "uWireframe"),
       camera: gl.getUniformLocation(shaderProgram, "uCamera"),
+      time: gl.getUniformLocation(shaderProgram, "uTime"),
     };
     const geometryCache = new WeakMap();
     const cameraPosition = [0, 0, 8.6];
@@ -280,7 +358,7 @@
       return width / height;
     }
 
-    function render() {
+    function render(currentTimeSeconds = 0) {
       const aspect = resize();
       gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
       const projection = perspective(Math.PI / 4.5, aspect, 0.1, 60);
@@ -288,6 +366,7 @@
       view[14] = -cameraDistance;
       cameraPosition[2] = cameraDistance;
       gl.uniform3fv(locations.camera, cameraPosition);
+      if (locations.time !== null) gl.uniform1f(locations.time, currentTimeSeconds);
       drawNode(root, identity(), { projection, view });
     }
 

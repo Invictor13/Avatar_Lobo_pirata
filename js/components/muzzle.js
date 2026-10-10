@@ -9,40 +9,40 @@
   window.LoboPirata.parts.muzzle = (root) => {
     const muzzleGroup = root.add(node("projecting-muzzle"));
 
-    // Sectioned snout
+    // Sectioned snout - elongated with deeper Z projection for pronounced 3D wolf profile
     const sections = [
-      { z: 0.23, y: 0.02, rx: 0.67, ry: 0.50 },
-      { z: 0.42, y: -0.09, rx: 0.60, ry: 0.44 },
-      { z: 0.66, y: -0.28, rx: 0.43, ry: 0.32 },
-      { z: 0.87, y: -0.47, rx: 0.29, ry: 0.21 },
-      { z: 1.04, y: -0.59, rx: 0.19, ry: 0.13 }
+      { z: 0.28, y: 0.05, rx: 0.65, ry: 0.52 },
+      { z: 0.52, y: -0.06, rx: 0.58, ry: 0.45 },
+      { z: 0.82, y: -0.24, rx: 0.42, ry: 0.34 },
+      { z: 1.12, y: -0.44, rx: 0.28, ry: 0.22 },
+      { z: 1.38, y: -0.58, rx: 0.18, ry: 0.14 }
     ];
-    muzzleGroup.mesh(geometry.snout(sections, 9, snoutPalette), [1, 1, 1], 0.82);
+    muzzleGroup.mesh(geometry.snout(sections, 10, snoutPalette), [1, 1, 1], 0.82);
 
     // Muzzle pads (left & right)
     for (const s of [-1, 1]) {
       const x = (v) => s * v;
-      muzzleGroup.mesh(geometry.ellipsoid(x(0.245), -0.51, 0.77, 0.22, 0.16, 0.18, 8, 5, [0xfff0e0, 0xf5e6d3, 0xe5d0b8, 0xfff8ee]), [1, 1, 1], 0.75);
+      muzzleGroup.mesh(geometry.ellipsoid(x(0.245), -0.51, 1.05, 0.22, 0.16, 0.18, 8, 5, [0xfff0e0, 0xf5e6d3, 0xe5d0b8, 0xfff8ee]), [1, 1, 1], 0.75);
       const padTris = [
-        [[x(0.09), -0.44, 0.91], [x(0.28), -0.43, 0.91], [x(0.30), -0.55, 0.92]],
-        [[x(0.28), -0.43, 0.91], [x(0.43), -0.53, 0.83], [x(0.30), -0.55, 0.92]],
-        [[x(0.30), -0.55, 0.92], [x(0.43), -0.53, 0.83], [x(0.23), -0.65, 0.92]]
+        [[x(0.09), -0.44, 1.19], [x(0.28), -0.43, 1.19], [x(0.30), -0.55, 1.20]],
+        [[x(0.28), -0.43, 1.19], [x(0.43), -0.53, 1.11], [x(0.30), -0.55, 1.20]],
+        [[x(0.30), -0.55, 1.20], [x(0.43), -0.53, 1.11], [x(0.23), -0.65, 1.20]]
       ];
       muzzleGroup.mesh(geometry.surfaceTriangles(padTris, [0xf5e6d3, 0xfff0e0, 0xe5d0b8]), [1, 1, 1], 0.75);
     }
 
-    // Black nose tip and nostrils
-    muzzleGroup.mesh(geometry.ellipsoid(0, -0.625, 1.105, 0.255, 0.155, 0.16, 9, 5, nosePalette), [1, 1, 1], 0.35);
+    // Black nose tip and nostrils projecting naturally forward
+    muzzleGroup.mesh(geometry.ellipsoid(0, -0.61, 1.445, 0.255, 0.155, 0.16, 9, 5, nosePalette), [1, 1, 1], 0.35);
 
     const nosePlanes = [
-      [[-0.22, -0.60, 1.20], [0, -0.55, 1.235], [0.22, -0.60, 1.20]],
-      [[-0.22, -0.60, 1.20], [0, -0.70, 1.225], [0, -0.55, 1.235]],
-      [[0, -0.55, 1.235], [0, -0.70, 1.225], [0.22, -0.60, 1.20]]
+      [[-0.22, -0.58, 1.54], [0, -0.53, 1.575], [0.22, -0.58, 1.54]],
+      [[-0.22, -0.58, 1.54], [0, -0.68, 1.565], [0, -0.53, 1.575]],
+      [[0, -0.53, 1.575], [0, -0.68, 1.565], [0.22, -0.58, 1.54]]
     ];
     muzzleGroup.mesh(geometry.surfaceTriangles(nosePlanes, [0x393238, 0x55505a, 0x24232b]), [1, 1, 1], 0.35);
 
-    muzzleGroup.mesh(geometry.ellipsoid(-0.125, -0.64, 1.228, 0.047, 0.027, 0.016, 7, 4, [0x05070b, 0x17141a]), [1, 1, 1], 0.2);
-    muzzleGroup.mesh(geometry.ellipsoid(0.125, -0.64, 1.228, 0.047, 0.027, 0.016, 7, 4, [0x05070b, 0x17141a]), [1, 1, 1], 0.2);
+    muzzleGroup.mesh(geometry.ellipsoid(-0.125, -0.62, 1.568, 0.047, 0.027, 0.016, 7, 4, [0x05070b, 0x17141a]), [1, 1, 1], 0.2);
+    muzzleGroup.mesh(geometry.ellipsoid(0.125, -0.62, 1.568, 0.047, 0.027, 0.016, 7, 4, [0x05070b, 0x17141a]), [1, 1, 1], 0.2);
 
     // Mouth cavity and jaw
     const mouth = muzzleGroup.add(node("articulated-mouth", [0, 0, 0]));

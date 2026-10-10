@@ -40,9 +40,9 @@
 
       pupilNodes.push({ iris, pupil });
 
-      // Specular Glint / Highlights
-      eyeAssembly.mesh(geometry.ellipsoid(s * 0.43, 0.44, 0.52, 0.018, 0.015, 0.008, 5, 3, [0xfff5e0, 0xffffff]), [1, 1, 1], 0.1);
-      eyeAssembly.mesh(geometry.ellipsoid(s * 0.50, 0.38, 0.518, 0.009, 0.009, 0.005, 4, 3, [0xffefa0]), [1, 1, 1], 0.1);
+      // Bright Specular Catchlight & Secondary Reflection Dots
+      eyeAssembly.mesh(geometry.ellipsoid(s * 0.42, 0.445, 0.525, 0.024, 0.02, 0.012, 6, 4, [0xffffff, 0xffffff]), [1, 1, 1], 0.05);
+      eyeAssembly.mesh(geometry.ellipsoid(s * 0.49, 0.385, 0.522, 0.012, 0.011, 0.007, 5, 3, [0xfffae0, 0xffffff]), [1, 1, 1], 0.05);
 
       // Menacing Slanted Eyebrow Ridge (Dark Black, inner corner down near nose, outer corner up towards ears: \ /)
       const brow = eyeAssembly.add(node("menacing-brow", [s * 0.45, 0.475, 0.51]));
